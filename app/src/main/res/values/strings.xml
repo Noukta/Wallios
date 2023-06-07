@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Wallios</string>
+    <string name="accept">Accept</string>
+    <string name="ready">Ready</string>
+    <string name="privacy_policy">privacy policy</string>
+    <string name="consent">"Do you consent to receive personalized ads and our "</string>
+    <string name="home">Home</string>
+    <string name="favorites">Favorites</string>
+    <string name="exit_title">Exit</string>
+    <string name="exit_text">Do you want to exit?</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="category">category</string>
+</resources>

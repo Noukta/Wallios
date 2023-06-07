@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "555347651611",
+    "project_id": "wallpaper-app-68dc0",
+    "storage_bucket": "wallpaper-app-68dc0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:555347651611:android:80f5224f5d8b1dfdb31cbe",
+        "android_client_info": {
+          "package_name": "com.noukta.wallpaper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "555347651611-18lgf2mp2pb98lfhugrthtg4m5me5nsv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCod6OyS1xeZCgRyQwKrUY3BPKUumYc88g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "555347651611-18lgf2mp2pb98lfhugrthtg4m5me5nsv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
