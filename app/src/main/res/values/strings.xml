@@ -11,4 +11,9 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="category">category</string>
+    <string name="set_wallpaper">Set wallpaper</string>
+    <string name="both">Both</string>
+    <string name="lockscreen">Lockscreen</string>
+    <string name="cancel">Cancel</string>
+    <string name="share_message">Check this wallpaper App: %s</string>
 </resources>
