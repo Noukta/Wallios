@@ -61,9 +61,7 @@ fun WallpapersGrid(
                     onLikeClick(wallpaper, liked)
                 }
             ) {
-                onWallpaperPreview(
-                    index
-                )
+                onWallpaperPreview(index)
             }
         }
     }

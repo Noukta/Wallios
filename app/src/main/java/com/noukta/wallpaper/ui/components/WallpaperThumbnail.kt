@@ -58,7 +58,7 @@ fun WallpaperThumbnail(
         modifier = Modifier
             .height(320.dp)
             .padding(10.dp),
-        shape = RoundedCornerShape(15)
+        shape = RoundedCornerShape(25)
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
