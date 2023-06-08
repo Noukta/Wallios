@@ -9,16 +9,12 @@ import com.noukta.wallpaper.ui.components.WallpapersGrid
 @Composable
 fun HomeScreen(
     wallpapers: List<Wallpaper>,
-    firstVisibleIdx: Int,
-    firstVisibleOffset: Int,
     onLikeClick: (Wallpaper, Boolean) -> Unit,
     onShuffle: () -> Unit,
-    onWallpaperPreview: (wallpaperIdx: Int, firstVisibleIdx: Int, firstVisibleOffset: Int) -> Unit
+    onWallpaperPreview: (wallpaperIdx: Int) -> Unit
 ) {
 
     val listState = rememberLazyGridState(
-        initialFirstVisibleItemIndex = firstVisibleIdx,
-        initialFirstVisibleItemScrollOffset = firstVisibleOffset
     )
 
     WallpapersGrid(wallpapers = wallpapers,
@@ -27,7 +23,7 @@ fun HomeScreen(
             onLikeClick(wallpaper, liked)
         },
         onShuffle = onShuffle,
-        onWallpaperPreview = { _wallpaperIdx, _firstVisibleIdx, _firstVisibleOffset ->
-            onWallpaperPreview(_wallpaperIdx, _firstVisibleIdx, _firstVisibleOffset)
+        onWallpaperPreview = { _wallpaperIdx ->
+            onWallpaperPreview(_wallpaperIdx)
         })
 }

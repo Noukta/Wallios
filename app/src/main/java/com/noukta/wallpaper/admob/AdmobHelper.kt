@@ -88,7 +88,7 @@ object AdmobHelper {
         if (mInterstitialAds[adUnit] != null) {
             mInterstitialAds[adUnit]?.show(context as Activity)
         } else {
-            Log.d("TAG", "The interstitial ad wasn't ready yet.")
+            Log.d(TAG, "The interstitial ad wasn't ready yet.")
         }
     }
 

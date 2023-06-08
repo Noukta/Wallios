@@ -11,7 +11,7 @@ import com.noukta.wallpaper.data.dummyWallpapers
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ui.UiState
-import com.noukta.wallpaper.util.IoScope
+import com.noukta.wallpaper.util.DataScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,16 +23,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     var wallpaperIdx by mutableStateOf(0)
         private set
-    var homeFirstVisibleOffset by mutableStateOf(0)
-        private set
-    var homeFirstVisibleIdx by mutableStateOf(0)
-        private set
-
     var favoriteIdx by mutableStateOf(0)
-        private set
-    var favoritesFirstVisibleOffset by mutableStateOf(0)
-        private set
-    var favoritesFirstVisibleIdx by mutableStateOf(0)
         private set
 
     var showExit by mutableStateOf(false)
@@ -53,14 +44,9 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         wallpaperIdx = index.coerceAtMost(_uiState.value.wallpapers.lastIndex)
     }
 
-    fun persistHomeScreen(index: Int, offset: Int) {
-        homeFirstVisibleIdx = index
-        homeFirstVisibleOffset = offset
-    }
-
     //Favorites Screen Logic
     fun fetchFavorites() {
-        IoScope.launch {
+        DataScope.launch {
             _uiState.value.favorites.addAll(DatabaseHolder.Database.favoritesDao().getAll())
         }
     }
@@ -69,17 +55,12 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         favoriteIdx = index.coerceAtMost(_uiState.value.favorites.lastIndex)
     }
 
-    fun persistFavoritesScreen(index: Int, offset: Int) {
-        favoritesFirstVisibleIdx = index
-        favoritesFirstVisibleOffset = offset
-    }
-
     /**
      * add wallpaper to favorites when it's already liked or remove from favorites.
      * @param liked true means already liked (false by default)
      */
     fun likeWallpaper(wallpaper: Wallpaper, liked: Boolean = false) {
-        IoScope.launch {
+        DataScope.launch {
             if (liked) {
                 DatabaseHolder.Database.favoritesDao().delete(wallpaper)
                 _uiState.value.favorites.remove(wallpaper)

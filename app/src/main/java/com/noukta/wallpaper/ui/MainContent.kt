@@ -20,6 +20,7 @@ import com.noukta.wallpaper.ui.components.ExitDialog
 import com.noukta.wallpaper.ui.nav.BottomNavigationBar
 import com.noukta.wallpaper.ui.nav.Screen
 import com.noukta.wallpaper.ui.screens.HomeScreen
+import com.noukta.wallpaper.ui.screens.PreviewScreen
 import com.noukta.wallpaper.ui.screens.SplashScreen
 
 @Composable
@@ -73,14 +74,11 @@ fun MainContent(vm: MainViewModel) {
             composable(Screen.Home.route) {
                 HomeScreen(
                     wallpapers = uiState.wallpapers,
-                    firstVisibleIdx = vm.homeFirstVisibleIdx,
-                    firstVisibleOffset = vm.homeFirstVisibleOffset,
                     onLikeClick = { wallpaper, liked ->
                         vm.likeWallpaper(wallpaper, liked)
                     },
                     onShuffle = { vm.shuffleWallpapers() },
-                    onWallpaperPreview = { wallpaperIdx, firstVisibleIdx, firstVisibleOffset ->
-                        vm.persistHomeScreen(firstVisibleIdx, firstVisibleOffset)
+                    onWallpaperPreview = { wallpaperIdx ->
                         vm.updateWallpaperIdx(wallpaperIdx)
                         navController.navigate(Screen.Preview.route)
                     }
@@ -90,7 +88,13 @@ fun MainContent(vm: MainViewModel) {
                 // TODO: FavoritesScreen
             }
             composable(Screen.Preview.route) {
-                // TODO: PreviewScreen
+                PreviewScreen(
+                    wallpapers = uiState.wallpapers,
+                    initialWallpaper = vm.wallpaperIdx,
+                    onLikeClick = { wallpaper, liked ->
+                        vm.likeWallpaper(wallpaper, liked)
+                    }
+                )
             }
         }
     }

@@ -44,7 +44,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun WallpaperThumbnail(
-    index: Int, wallpaper: Wallpaper, onLikeClick: (Boolean) -> Unit, onClick: () -> Unit
+    wallpaper: Wallpaper, onLikeClick: (Boolean) -> Unit, onClick: () -> Unit
 ) {
     var liked by remember {
         mutableStateOf(false)
@@ -81,7 +81,6 @@ fun WallpaperThumbnail(
                         brush = Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                //MaterialTheme.colorScheme.background.copy(alpha = .15f),
                                 MaterialTheme.colorScheme.background.copy(alpha = .45f)
                             )
                         )
@@ -93,8 +92,7 @@ fun WallpaperThumbnail(
                     onClick = {
                         onLikeClick(liked)
                         liked = !liked
-                    },
-                    //modifier = Modifier.align(Alignment.CenterEnd)
+                    }
                 ) {
                     Icon(
                         imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -120,7 +118,6 @@ fun WallpaperThumbnail(
 fun WallpaperThumbnailPreview() {
     WallpaperAppTheme {
         WallpaperThumbnail(
-            index = 0,
             wallpaper = Wallpaper(R.raw.wallpaper_0013, categories = listOf(Category.Movie)),
             onLikeClick = {}) {
 
