@@ -1,7 +1,6 @@
 package com.noukta.wallpaper.ui.screens
 
 import android.content.res.Configuration
-import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -27,6 +26,8 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +35,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,9 +46,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 import androidx.compose.ui.unit.dp
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.noukta.wallpaper.R
 import com.noukta.wallpaper.admob.AdmobHelper
 import com.noukta.wallpaper.data.dummyWallpapers
@@ -58,9 +57,8 @@ import com.noukta.wallpaper.ui.components.ListDialog
 import com.noukta.wallpaper.ui.theme.WallpaperAppTheme
 import com.noukta.wallpaper.ui.theme.favorite_color
 import com.noukta.wallpaper.util.DataScope
-import com.noukta.wallpaper.util.MODE
-import com.noukta.wallpaper.util.WALLPAPER_ID
 import com.noukta.wallpaper.util.WallpaperWorker
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -70,6 +68,8 @@ fun PreviewScreen(
     onLikeClick:  (Wallpaper, Boolean) -> Unit
 ) {
     val context = LocalContext.current
+    val snackState = remember { SnackbarHostState() }
+    val snackScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialWallpaper)
     val currentWallpaper by remember {
         derivedStateOf {
@@ -167,6 +167,8 @@ fun PreviewScreen(
                     )
                 }
             }
+
+            SnackbarHost(hostState = snackState)
         }
     }
 
@@ -182,20 +184,20 @@ fun PreviewScreen(
                 showModeSelection = false
             }
         ) {
-            val workManager = WorkManager.getInstance(context)
-            val data = Data.Builder()
-                .putInt(WALLPAPER_ID, currentWallpaper.id)
-                .putInt(MODE, it)
-                .build()
-            val workRequest = OneTimeWorkRequestBuilder<WallpaperWorker>()
-                .setInputData(data)
-                .build()
-            workManager.enqueue(workRequest)
             showModeSelection = false
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S_V2)
+            WallpaperWorker.setWallpaper(context, currentWallpaper, it){
                 AdmobHelper.showInterstitial(context, INTERSTITIAL)
+            }
+            snackScope.launch {
+                snackState.showSnackbar(context.getString(R.string.changing_wallpaper))
+            }
+        }
+        LaunchedEffect(Unit){
+            AdmobHelper.loadInterstitial(context, INTERSTITIAL)
         }
     }
+
+
 }
 
 @Preview(

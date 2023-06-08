@@ -5,8 +5,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.DisplayMetrics
 import androidx.work.CoroutineWorker
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ext.getBitmap
 import com.noukta.wallpaper.settings.WallpaperMode
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +22,26 @@ const val MODE = "mode"
 const val RESULT = "result"
 
 class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+
+    companion object{
+        fun setWallpaper(context: Context, wallpaper: Wallpaper, mode: Int, onFinish: () -> Unit){
+            val workManager = WorkManager.getInstance(context)
+            val data = Data.Builder()
+                .putInt(WALLPAPER_ID, wallpaper.id)
+                .putInt(MODE, mode)
+                .build()
+            val workRequest = OneTimeWorkRequestBuilder<WallpaperWorker>()
+                .setInputData(data)
+                .build()
+            workManager.enqueue(workRequest)
+            workManager.getWorkInfoByIdLiveData(workRequest.id)
+                .observeForever {
+                    if(it.state == WorkInfo.State.SUCCEEDED) {
+                        onFinish()
+                    }
+                }
+        }
+    }
 
     private fun setWallpaperUp(context: Context, imageBitmap: Bitmap, mode: Int): Boolean {
 
