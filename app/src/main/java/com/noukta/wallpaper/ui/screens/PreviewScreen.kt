@@ -144,7 +144,10 @@ fun PreviewScreen(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 FilledTonalIconButton(
-                    onClick = { onLikeClick(currentWallpaper, liked) }
+                    onClick = {
+                        onLikeClick(currentWallpaper, liked)
+                        liked = !liked
+                    }
                 ) {
                     Icon(
                         imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
