@@ -9,8 +9,9 @@ import com.noukta.wallpaper.data.Category
     tableName = "favorites"
 )
 data class Wallpaper(
-    @PrimaryKey val id: Int,
+    @PrimaryKey val id: String,
+    @Ignore val url: String,
     @Ignore val categories: List<Category> = listOf()
 ) {
-    constructor(id: Int) : this(id, listOf())
+    constructor(id: String) : this(id, "", listOf())
 }

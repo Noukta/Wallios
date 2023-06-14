@@ -19,6 +19,7 @@ import com.noukta.wallpaper.ui.components.AppTopBar
 import com.noukta.wallpaper.ui.components.ExitDialog
 import com.noukta.wallpaper.ui.nav.BottomNavigationBar
 import com.noukta.wallpaper.ui.nav.Screen
+import com.noukta.wallpaper.ui.screens.FavoritesScreen
 import com.noukta.wallpaper.ui.screens.HomeScreen
 import com.noukta.wallpaper.ui.screens.PreviewScreen
 import com.noukta.wallpaper.ui.screens.SplashScreen
@@ -40,8 +41,6 @@ fun MainContent(vm: MainViewModel) {
     LaunchedEffect(Unit) {
         if (uiState.wallpapers.isEmpty())
             vm.fetchWallpapers()
-//        if (uiState.favorites.isEmpty())
-//            vm.fetchFavorites()
     }
 
     Scaffold(
@@ -50,8 +49,11 @@ fun MainContent(vm: MainViewModel) {
             BottomNavigationBar(
                 screen = currentScreen,
                 onClick = {
-                    if (currentScreen == Screen.Home)
+                    if (currentScreen == Screen.Home) {
                         navController.navigate(Screen.Favorites.route)
+                        vm.updateFavoriteIdx(0)
+                        vm.fetchFavorites()
+                    }
                     else
                         navController.navigateUp()
                 }
@@ -85,16 +87,37 @@ fun MainContent(vm: MainViewModel) {
                 )
             }
             composable(Screen.Favorites.route) {
-                // TODO: FavoritesScreen
-            }
-            composable(Screen.Preview.route) {
-                PreviewScreen(
-                    wallpapers = uiState.wallpapers,
-                    initialWallpaper = vm.wallpaperIdx,
+                FavoritesScreen(
+                    wallpapers = uiState.favorites,
                     onLikeClick = { wallpaper, liked ->
                         vm.likeWallpaper(wallpaper, liked)
+                    },
+                    onWallpaperPreview = { favoriteIdx ->
+                        vm.updateFavoriteIdx(favoriteIdx)
+                        navController.navigate(Screen.Preview.route)
                     }
                 )
+            }
+            composable(Screen.Preview.route) {
+                val prev = navController.previousBackStackEntry?.destination?.route
+                if (prev == Screen.Home.route) {
+                    PreviewScreen(
+                        wallpapers = uiState.wallpapers,
+                        initialWallpaper = vm.wallpaperIdx
+                    ) { wallpaper, liked ->
+                        vm.likeWallpaper(wallpaper, liked)
+                    }
+                }
+                if (prev == Screen.Favorites.route){
+                    PreviewScreen(
+                        wallpapers = uiState.favorites,
+                        initialWallpaper = vm.favoriteIdx,
+                        onPageChanged = { index -> vm.updateFavoriteIdx(index)}
+                    ) { wallpaper, liked ->
+                        vm.likeWallpaper(wallpaper, liked)
+                    }
+                }
+
             }
         }
     }

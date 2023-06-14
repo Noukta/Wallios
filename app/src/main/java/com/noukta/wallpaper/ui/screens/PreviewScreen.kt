@@ -1,8 +1,6 @@
 package com.noukta.wallpaper.ui.screens
 
-import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,41 +33,34 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.Wallpapers
 import androidx.compose.ui.unit.dp
 import com.noukta.wallpaper.R
 import com.noukta.wallpaper.admob.AdmobHelper
-import com.noukta.wallpaper.data.dummyWallpapers
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
-import com.noukta.wallpaper.ext.shareWallpaper
 import com.noukta.wallpaper.settings.AdUnit.INTERSTITIAL
 import com.noukta.wallpaper.ui.components.ListDialog
-import com.noukta.wallpaper.ui.theme.WallpaperAppTheme
 import com.noukta.wallpaper.ui.theme.favorite_color
 import com.noukta.wallpaper.util.DataScope
-import com.noukta.wallpaper.util.WallpaperWorker
-import kotlinx.coroutines.launch
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil.CoilImage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PreviewScreen(
     wallpapers: List<Wallpaper>,
     initialWallpaper: Int,
-    onLikeClick:  (Wallpaper, Boolean) -> Unit
+    onPageChanged: (Int) -> Unit = {},
+    onLikeClick: (Wallpaper, Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val snackState = remember { SnackbarHostState() }
-    val snackScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialWallpaper)
     val currentWallpaper by remember {
         derivedStateOf {
@@ -87,6 +78,7 @@ fun PreviewScreen(
         DataScope.launch {
             liked = DatabaseHolder.Database.favoritesDao().exists(currentWallpaper.id)
         }
+        onPageChanged(pagerState.currentPage)
     }
 
     Box(modifier = Modifier.fillMaxSize()){
@@ -94,11 +86,12 @@ fun PreviewScreen(
             pageCount = wallpapers.size,
             state = pagerState
         ) {
-            Image(
-                painter = painterResource(id = wallpapers[it].id),
-                contentDescription = null,
+            CoilImage(
+                imageModel = { wallpapers[it].url },
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                imageOptions = ImageOptions(
+                    contentScale = ContentScale.Crop,
+                )
             )
         }
 
@@ -162,7 +155,7 @@ fun PreviewScreen(
                     Text(text = stringResource(R.string.set_wallpaper))
                 }
                 FilledTonalIconButton(
-                    onClick = { shareWallpaper(context, currentWallpaper.id) }
+                    onClick = { /*shareWallpaper(context, currentWallpaper.url)*/ }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -188,12 +181,9 @@ fun PreviewScreen(
             }
         ) {
             showModeSelection = false
-            WallpaperWorker.setWallpaper(context, currentWallpaper, it){
+            /*WallpaperWorker.setWallpaper(context, currentWallpaper, it){
                 AdmobHelper.showInterstitial(context, INTERSTITIAL)
-            }
-            snackScope.launch {
-                snackState.showSnackbar(context.getString(R.string.changing_wallpaper))
-            }
+            }*/
         }
         LaunchedEffect(Unit){
             AdmobHelper.loadInterstitial(context, INTERSTITIAL)
@@ -201,20 +191,4 @@ fun PreviewScreen(
     }
 
 
-}
-
-@Preview(
-    showBackground = true,
-    wallpaper = Wallpapers.BLUE_DOMINATED_EXAMPLE,
-    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
-)
-@Composable
-fun PreviewScreenPreview() {
-    WallpaperAppTheme {
-        PreviewScreen(
-            wallpapers = dummyWallpapers,
-            initialWallpaper = 10,
-            onLikeClick = {_, _ -> }
-        )
-    }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 
-fun getBitmap(context: Context, resId: Int): Bitmap {
-    return BitmapFactory.decodeResource(context.resources, resId)
+fun getBitmap(context: Context, resUrl: String): Bitmap {
+    // TODO: bitmap from url 
+    return BitmapFactory.decodeResource(context.resources, 0)
 }

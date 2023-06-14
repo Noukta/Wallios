@@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,9 +30,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun WallpapersGrid(
     wallpapers: List<Wallpaper>,
-    listState: LazyGridState,
     onLikeClick: (Wallpaper, Boolean) -> Unit,
-    onShuffle: () -> Unit,
+    refreshable: Boolean = false,
+    onRefresh: () -> Unit = {},
     onWallpaperPreview: (wallpaperIdx: Int) -> Unit
 ) {
     val refreshScope = rememberCoroutineScope()
@@ -42,17 +42,20 @@ fun WallpapersGrid(
         refreshScope.launch {
             refreshing = true
             delay(1000)
-            onShuffle()
+            onRefresh()
             refreshing = false
         }
     })
+
+
+    val listState = rememberLazyGridState()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2), state = listState,
         modifier = Modifier
             .fillMaxSize()
             .padding(10.dp)
-            .pullRefresh(refreshState)
+            .pullRefresh(refreshState, refreshable)
     ) {
         itemsIndexed(wallpapers) { index, wallpaper ->
             WallpaperThumbnail(

@@ -1,8 +1,6 @@
 package com.noukta.wallpaper.data
 
-import com.noukta.wallpaper.R
-import com.noukta.wallpaper.db.obj.Wallpaper
-
+/*
 val dummyWallpapers = listOf(
     Wallpaper(R.raw.wallpaper_0000, listOf(Category.Animal, Category.Cute)),
     Wallpaper(R.raw.wallpaper_0001, listOf(Category.Aesthetic, Category.Car)),
@@ -24,4 +22,4 @@ val dummyWallpapers = listOf(
     Wallpaper(R.raw.wallpaper_0018, listOf(Category.Movie, Category.Cute)),
     Wallpaper(R.raw.wallpaper_0019, listOf(Category.Anime, Category.Cute)),
     Wallpaper(R.raw.wallpaper_0020, listOf(Category.Aesthetic, Category.Cute))
-)
+)*/

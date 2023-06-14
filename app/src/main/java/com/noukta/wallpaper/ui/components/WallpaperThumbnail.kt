@@ -1,7 +1,5 @@
 package com.noukta.wallpaper.ui.components
 
-import android.content.res.Configuration
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,16 +27,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.Wallpapers
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.noukta.wallpaper.R
-import com.noukta.wallpaper.data.Category
+import coil.ImageLoader
+import coil.memory.MemoryCache
+import coil.request.ImageRequest
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
-import com.noukta.wallpaper.ui.theme.WallpaperAppTheme
 import com.noukta.wallpaper.ui.theme.favorite_color
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil.CoilImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -46,6 +44,7 @@ import kotlinx.coroutines.withContext
 fun WallpaperThumbnail(
     wallpaper: Wallpaper, onLikeClick: (Boolean) -> Unit, onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     var liked by remember {
         mutableStateOf(false)
     }
@@ -63,14 +62,25 @@ fun WallpaperThumbnail(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            Image(
-                painter = painterResource(id = wallpaper.id),
-                contentDescription = null,
+            CoilImage(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(bottomStartPercent = 5, bottomEndPercent = 5))
                     .clickable { onClick() },
-                contentScale = ContentScale.Crop
+                imageOptions = ImageOptions(
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center
+                ),
+                imageRequest = {
+                    ImageRequest.Builder(context)
+                        .data(wallpaper.url)
+                        .crossfade(true)
+                        .build() },
+                imageLoader = {
+                    ImageLoader.Builder(context)
+                        .memoryCache { MemoryCache.Builder(context).maxSizePercent(0.25).build() }
+                        .crossfade(true)
+                        .build() }
             )
             Box(
                 modifier = Modifier
@@ -104,23 +114,6 @@ fun WallpaperThumbnail(
                     )
                 }
             }
-        }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    device = "spec:width=180dp,height=320dp,dpi=440",
-    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_UNDEFINED,
-    wallpaper = Wallpapers.BLUE_DOMINATED_EXAMPLE
-)
-@Composable
-fun WallpaperThumbnailPreview() {
-    WallpaperAppTheme {
-        WallpaperThumbnail(
-            wallpaper = Wallpaper(R.raw.wallpaper_0013, categories = listOf(Category.Movie)),
-            onLikeClick = {}) {
-
         }
     }
 }

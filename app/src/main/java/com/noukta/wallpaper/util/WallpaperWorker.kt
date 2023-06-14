@@ -17,7 +17,7 @@ import com.noukta.wallpaper.settings.WallpaperMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-const val WALLPAPER_ID = "wallpaperId"
+const val WALLPAPER_URL = "wallpaperURL"
 const val MODE = "mode"
 const val RESULT = "result"
 
@@ -27,7 +27,7 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
         fun setWallpaper(context: Context, wallpaper: Wallpaper, mode: Int, onFinish: () -> Unit){
             val workManager = WorkManager.getInstance(context)
             val data = Data.Builder()
-                .putInt(WALLPAPER_ID, wallpaper.id)
+                .putString(WALLPAPER_URL, wallpaper.url)
                 .putInt(MODE, mode)
                 .build()
             val workRequest = OneTimeWorkRequestBuilder<WallpaperWorker>()
@@ -93,9 +93,9 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
         return withContext(Dispatchers.IO)
         {
             return@withContext try {
-                val wallpaperId = inputData.getInt(WALLPAPER_ID, 0)
+                val wallpaperUrl = inputData.getString(WALLPAPER_URL).orEmpty()
                 val mode = inputData.getInt(MODE, 0)
-                val bitmap = getBitmap(applicationContext, wallpaperId)
+                val bitmap = getBitmap(applicationContext, wallpaperUrl)
                 val result = setWallpaper(applicationContext, bitmap, mode)
                 val outputData = workDataOf(RESULT to result)
                 Result.success(outputData)

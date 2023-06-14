@@ -16,7 +16,7 @@ interface FavoritesDao {
     fun findById(id: Int): Wallpaper
 
     @Query("SELECT EXISTS (SELECT 1 FROM favorites WHERE id = :id)")
-    fun exists(id: Int): Boolean
+    fun exists(id: String): Boolean
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(vararg wallpaper: Wallpaper)
