@@ -1,5 +1,6 @@
 package com.noukta.wallpaper.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -26,12 +27,12 @@ fun SplashScreen(onLoadFinished: () -> Unit) {
     LaunchedEffect(Unit) {
         for (i in AdUnit.APP_OPEN_DELAY * 2 downTo 0) {
             delay(500)
-            /*appOpenAdManager.showAdIfAvailable(
+            appOpenAdManager.showAdIfAvailable(
                 context as Activity,
                 AdUnit.APP_OPEN
             ) {
                 onLoadFinished()
-            }*/
+            }
         }
         onLoadFinished()
     }
@@ -51,7 +52,7 @@ fun SplashScreen(onLoadFinished: () -> Unit) {
         modifier = Modifier.fillMaxSize()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_splash_screen),
+            painter = painterResource(id = R.drawable.ic_splash_foreground),
             contentDescription = null,
             modifier = Modifier
                 .wrapContentSize()

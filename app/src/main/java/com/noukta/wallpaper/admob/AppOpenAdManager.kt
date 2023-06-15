@@ -88,13 +88,13 @@ class AppOpenAdManager {
      *
      * @param activity the activity that shows the app open ad
      */
-    fun showAdIfAvailable(activity: Activity, appOpenAdUnitId: String, dismissAd: () -> Unit = {}) {
+    fun showAdIfAvailable(activity: Activity, appOpenAdUnitId: String, onDismiss: () -> Unit = {}) {
         showAdIfAvailable(
             activity,
             appOpenAdUnitId,
             object : AdmobAppOpenAdCallback {
                 override fun onAdDismissed(tag: String, message: String) {
-                    dismissAd()
+                    onDismiss()
                 }
 
                 override fun onAdShowed(tag: String, message: String) {

@@ -54,7 +54,6 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.10.1'
     def lifecycle_version = '2.6.1'
     def room_version = '2.5.1'
     // core - lifecycle - activity - navigation
