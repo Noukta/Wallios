@@ -24,7 +24,7 @@ fun AppTopBar(screen: Screen, modifier: Modifier = Modifier) {
                 Row() {
                     if(screen == Screen.Home)
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground_hdpi),
+                            painter = painterResource(id = R.drawable.ic_topbar_foreground),
                             contentDescription = null,
                             modifier = Modifier.padding(end = 5.dp),
                             tint = Color.Unspecified
