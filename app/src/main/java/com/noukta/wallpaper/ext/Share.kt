@@ -4,8 +4,6 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import com.noukta.wallpaper.BuildConfig
@@ -14,17 +12,11 @@ import com.noukta.wallpaper.settings.URL.PLAY_STORE
 import java.io.File
 import java.io.FileOutputStream
 
-fun shareWallpaper(context: Context, id: Int) {
-    val bitmap = BitmapFactory.decodeResource(context.resources, id)
+fun shareWallpaper(context: Context, bitmap: Bitmap?) {
     val dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
     val file = File(dir, "Wallios-Wallpaper.webp")
     val outputStream = FileOutputStream(file)
-    val compressFormat =
-        if(Build.VERSION.SDK_INT >= 30)
-            Bitmap.CompressFormat.WEBP_LOSSY
-        else
-            Bitmap.CompressFormat.WEBP
-    bitmap.compress(compressFormat, 100, outputStream)
+    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
     outputStream.flush()
     outputStream.close()
     val uri = FileProvider.getUriForFile(

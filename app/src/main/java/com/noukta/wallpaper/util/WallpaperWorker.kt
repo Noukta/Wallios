@@ -10,24 +10,18 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
-import com.noukta.wallpaper.db.obj.Wallpaper
-import com.noukta.wallpaper.ext.getBitmap
 import com.noukta.wallpaper.settings.WallpaperMode
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
-const val WALLPAPER_URL = "wallpaperURL"
+const val WALLPAPER_URL = "wallpaper_url"
 const val MODE = "mode"
-const val RESULT = "result"
 
 class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
-    companion object{
-        fun setWallpaper(context: Context, wallpaper: Wallpaper, mode: Int, onFinish: () -> Unit){
+    companion object {
+        fun setWallpaper(context: Context, url: String, mode: Int, onFinish: () -> Unit) {
             val workManager = WorkManager.getInstance(context)
             val data = Data.Builder()
-                .putString(WALLPAPER_URL, wallpaper.url)
+                .putString(WALLPAPER_URL, url)
                 .putInt(MODE, mode)
                 .build()
             val workRequest = OneTimeWorkRequestBuilder<WallpaperWorker>()
@@ -36,7 +30,7 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
             workManager.enqueue(workRequest)
             workManager.getWorkInfoByIdLiveData(workRequest.id)
                 .observeForever {
-                    if(it.state == WorkInfo.State.SUCCEEDED) {
+                    if (it.state == WorkInfo.State.SUCCEEDED) {
                         onFinish()
                     }
                 }
@@ -90,18 +84,16 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
     }
 
     override suspend fun doWork(): Result {
-        return withContext(Dispatchers.IO)
-        {
-            return@withContext try {
+        return try {
                 val wallpaperUrl = inputData.getString(WALLPAPER_URL).orEmpty()
                 val mode = inputData.getInt(MODE, 0)
-                val bitmap = getBitmap(applicationContext, wallpaperUrl)
-                val result = setWallpaper(applicationContext, bitmap, mode)
-                val outputData = workDataOf(RESULT to result)
-                Result.success(outputData)
+
+                ImageHelper.urlToBitmap(wallpaperUrl, applicationContext){
+                    setWallpaper(applicationContext, it, mode)
+                }
+                Result.success()
             } catch (throwable: Throwable) {
                 Result.failure()
             }
-        }
     }
 }

@@ -41,10 +41,13 @@ import com.noukta.wallpaper.R
 import com.noukta.wallpaper.admob.AdmobHelper
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
+import com.noukta.wallpaper.ext.shareWallpaper
 import com.noukta.wallpaper.settings.AdUnit.INTERSTITIAL
 import com.noukta.wallpaper.ui.components.ListDialog
 import com.noukta.wallpaper.ui.theme.favorite_color
 import com.noukta.wallpaper.util.DataScope
+import com.noukta.wallpaper.util.ImageHelper
+import com.noukta.wallpaper.util.WallpaperWorker
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil.CoilImage
 
@@ -149,7 +152,14 @@ fun PreviewScreen(
                     Text(text = stringResource(R.string.set_wallpaper))
                 }
                 FilledTonalIconButton(
-                    onClick = { /*shareWallpaper(context, currentWallpaper.url)*/ }
+                    onClick = {
+                        ImageHelper.urlToBitmap(
+                            imageURL = currentWallpaper.url,
+                            context = context
+                        ){
+                            shareWallpaper(context, it)
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -175,9 +185,9 @@ fun PreviewScreen(
             }
         ) {
             showModeSelection = false
-            /*WallpaperWorker.setWallpaper(context, currentWallpaper, it){
+            WallpaperWorker.setWallpaper(context, currentWallpaper.url, it){
                 AdmobHelper.showInterstitial(context, INTERSTITIAL)
-            }*/
+            }
         }
         LaunchedEffect(Unit){
             AdmobHelper.loadInterstitial(context, INTERSTITIAL)
