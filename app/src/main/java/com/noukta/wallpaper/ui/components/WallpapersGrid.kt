@@ -9,11 +9,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +41,8 @@ fun WallpapersGrid(
     onRefresh: () -> Unit = {},
     onWallpaperPreview: (wallpaperIdx: Int) -> Unit
 ) {
+    val listState = rememberLazyGridState()
+
     val refreshScope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
 
@@ -47,8 +55,20 @@ fun WallpapersGrid(
         }
     })
 
+    val enableScrollUp by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex != 0
+        }
+    }
 
-    val listState = rememberLazyGridState()
+    var scrollUp by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(scrollUp) {
+        scrollUp = false
+        listState.animateScrollToItem(0)
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2), state = listState,
@@ -80,5 +100,23 @@ fun WallpapersGrid(
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             scale = true
         )
+    }
+
+    if (enableScrollUp) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            FloatingActionButton(
+                modifier = Modifier.padding(32.dp),
+                onClick = { scrollUp = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowUpward,
+                    contentDescription = null
+                )
+            }
+        }
     }
 }
