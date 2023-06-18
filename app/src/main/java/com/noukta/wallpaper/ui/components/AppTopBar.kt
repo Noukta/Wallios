@@ -48,7 +48,7 @@ fun AppTopBar(
                         targetValue = 1f,
                         animationSpec = tween(
                             durationMillis = 1000,
-                            delayMillis = 5000,
+                            delayMillis = 3000,
                             easing = FastOutSlowInEasing
                         )
                     )
