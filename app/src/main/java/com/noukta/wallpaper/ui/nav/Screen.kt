@@ -18,6 +18,7 @@ sealed class Screen(
             Splash,
             Home,
             Favorites,
+            Search,
             Preview
         )
     }
@@ -31,6 +32,11 @@ sealed class Screen(
         route = "home",
         titleRes = R.string.home,
         icon = Icons.Default.Home
+    )
+
+    object Search : Screen(
+        route = "search",
+        barHidden = true
     )
 
     object Favorites : Screen(

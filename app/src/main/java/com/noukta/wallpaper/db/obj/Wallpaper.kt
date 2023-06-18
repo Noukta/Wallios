@@ -17,9 +17,11 @@ data class Wallpaper(
     constructor(id: String) : this(id, "",Category.Iphone, listOf())
 
     fun match(tag: String): Boolean {
+        val tagVariants = listOf(
+            tag.replace(" ", "").lowercase()
+        ) + tag.lowercase().split(" ")
         return tags.any {
-            it == tag
+            it in tagVariants
         }
     }
-
 }

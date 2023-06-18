@@ -28,8 +28,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     var wallpaperIdx by mutableStateOf(0)
         private set
-    var favoriteIdx by mutableStateOf(0)
-        private set
 
     var showExit by mutableStateOf(false)
     var showReview by mutableStateOf(false)
@@ -61,8 +59,8 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         _uiState.value.wallpapers.shuffle()
     }
 
-    fun updateWallpaperIdx(index: Int = 0) {
-        wallpaperIdx = index.coerceAtMost(_uiState.value.wallpapers.lastIndex)
+    fun updateWallpaperIdx(index: Int, lastIndex: Int) {
+        wallpaperIdx = index.coerceAtMost(lastIndex)
     }
 
     fun fetchFavorites() {
@@ -81,10 +79,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         _uiState.value.searchResult.addAll(
             _uiState.value.wallpapers.filter {it.match(tag)}
         )
-    }
-
-    fun updateFavoriteIdx(index: Int = 0) {
-        favoriteIdx = index.coerceAtMost(_uiState.value.favorites.lastIndex)
     }
 
     /**

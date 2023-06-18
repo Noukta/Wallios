@@ -16,5 +16,6 @@
     <string name="lockscreen">Lockscreen</string>
     <string name="cancel">Cancel</string>
     <string name="share_message">Check this wallpaper App: %s</string>
-    <string name="changing_wallpaper">Changing wallpaper...</string>
+    <string name="changing_wallpaper">Changing wallpaper…</string>
+    <string name="search_wallpapers">Search for wallpapers</string>
 </resources>

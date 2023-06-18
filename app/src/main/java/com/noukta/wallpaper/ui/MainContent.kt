@@ -1,6 +1,5 @@
 package com.noukta.wallpaper.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -24,6 +23,7 @@ import com.noukta.wallpaper.ui.nav.Screen
 import com.noukta.wallpaper.ui.screens.FavoritesScreen
 import com.noukta.wallpaper.ui.screens.HomeScreen
 import com.noukta.wallpaper.ui.screens.PreviewScreen
+import com.noukta.wallpaper.ui.screens.SearchScreen
 import com.noukta.wallpaper.ui.screens.SplashScreen
 
 @Composable
@@ -41,43 +41,34 @@ fun MainContent(vm: MainViewModel) {
     }
 
     LaunchedEffect(Unit) {
-        if (uiState.wallpapers.isEmpty())
-            vm.fetchWallpapers()
+        if (uiState.wallpapers.isEmpty()) vm.fetchWallpapers()
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                screen = currentScreen,
-                query = vm.searchTag,
-                isSearchActive = vm.isSearchActive,
-                updateQuery = {
-                    vm.searchTag = it
-                },
-                searchByTag = {
-                    vm.filterByTag(it)
-                    uiState.searchResult.forEach { w ->
-                        Log.d("Filter", w.tags.toString())
-                    }
-                },
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(
-                screen = currentScreen,
-                onClick = {
-                    if (currentScreen == Screen.Home) {
-                        navController.navigate(Screen.Favorites.route)
-                        vm.updateFavoriteIdx(0)
-                        vm.fetchFavorites()
-                    }
-                    else
-                        navController.navigateUp()
+    Scaffold(topBar = {
+        AppTopBar(
+            screen = currentScreen,
+            query = vm.searchTag,
+            isSearchActive = vm.isSearchActive,
+            updateQuery = {
+                vm.searchTag = it
+            },
+            searchByTag = {
+                vm.filterByTag(it)
+                navController.navigate(Screen.Search.route){
+                    this.launchSingleTop = true
                 }
-            )
-        }
-    ) {
+            },
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }, bottomBar = {
+        BottomNavigationBar(screen = currentScreen, onClick = {
+            if (currentScreen == Screen.Home) {
+                navController.navigate(Screen.Favorites.route)
+                vm.updateWallpaperIdx(0, 0)
+                vm.fetchFavorites()
+            } else navController.navigateUp()
+        })
+    }) {
         NavHost(
             navController = navController,
             startDestination = Screen.Splash.route,
@@ -92,48 +83,43 @@ fun MainContent(vm: MainViewModel) {
                 }
             }
             composable(Screen.Home.route) {
-                HomeScreen(
-                    wallpapers = uiState.wallpapers,
+                HomeScreen(wallpapers = uiState.wallpapers,
                     onLikeClick = { wallpaper, liked ->
                         vm.likeWallpaper(wallpaper, liked)
                     },
                     onShuffle = { vm.shuffleWallpapers() },
                     onWallpaperPreview = { wallpaperIdx ->
-                        vm.updateWallpaperIdx(wallpaperIdx)
+                        vm.updateWallpaperIdx(wallpaperIdx, uiState.wallpapers.lastIndex)
                         navController.navigate(Screen.Preview.route)
-                    }
-                )
+                    })
             }
             composable(Screen.Favorites.route) {
-                FavoritesScreen(
-                    wallpapers = uiState.favorites,
-                    onLikeClick = { wallpaper, liked ->
-                        vm.likeWallpaper(wallpaper, liked)
-                    },
-                    onWallpaperPreview = { favoriteIdx ->
-                        vm.updateFavoriteIdx(favoriteIdx)
-                        navController.navigate(Screen.Preview.route)
-                    }
-                )
+                FavoritesScreen(wallpapers = uiState.favorites, onLikeClick = { wallpaper, liked ->
+                    vm.likeWallpaper(wallpaper, liked)
+                }, onWallpaperPreview = { wallpaperIdx ->
+                    vm.updateWallpaperIdx(wallpaperIdx, uiState.favorites.lastIndex)
+                    navController.navigate(Screen.Preview.route)
+                })
+            }
+            composable(Screen.Search.route) {
+                SearchScreen(wallpapers = uiState.searchResult, onLikeClick = { wallpaper, liked ->
+                    vm.likeWallpaper(wallpaper, liked)
+                }, onWallpaperPreview = { wallpaperIdx ->
+                    vm.updateWallpaperIdx(wallpaperIdx, uiState.searchResult.lastIndex)
+                    navController.navigate(Screen.Preview.route)
+                })
             }
             composable(Screen.Preview.route) {
                 val prev = navController.previousBackStackEntry?.destination?.route
-                if (prev == Screen.Home.route) {
-                    PreviewScreen(
-                        wallpapers = uiState.wallpapers,
-                        initialWallpaper = vm.wallpaperIdx
-                    ) { wallpaper, liked ->
-                        vm.likeWallpaper(wallpaper, liked)
-                    }
-                }
-                if (prev == Screen.Favorites.route){
-                    PreviewScreen(
-                        wallpapers = uiState.favorites,
-                        initialWallpaper = vm.favoriteIdx,
-                        onPageChanged = { index -> vm.updateFavoriteIdx(index)}
-                    ) { wallpaper, liked ->
-                        vm.likeWallpaper(wallpaper, liked)
-                    }
+                PreviewScreen(
+                    wallpapers = when (prev) {
+                        Screen.Home.route -> uiState.wallpapers
+                        Screen.Favorites.route -> uiState.favorites
+                        else -> uiState.searchResult
+                    },
+                    initialWallpaper = vm.wallpaperIdx,
+                ) { wallpaper, liked ->
+                    vm.likeWallpaper(wallpaper, liked)
                 }
 
             }

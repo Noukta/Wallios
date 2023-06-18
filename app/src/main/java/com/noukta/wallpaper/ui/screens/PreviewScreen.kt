@@ -56,7 +56,6 @@ import com.skydoves.landscapist.coil.CoilImage
 fun PreviewScreen(
     wallpapers: List<Wallpaper>,
     initialWallpaper: Int,
-    onPageChanged: (Int) -> Unit = {},
     onLikeClick: (Wallpaper, Boolean) -> Unit
 ) {
     val context = LocalContext.current
@@ -78,7 +77,6 @@ fun PreviewScreen(
         DataScope.launch {
             liked = DatabaseHolder.Database.favoritesDao().exists(currentWallpaper.id)
         }
-        onPageChanged(pagerState.currentPage)
     }
 
     Box(modifier = Modifier.fillMaxSize()){
