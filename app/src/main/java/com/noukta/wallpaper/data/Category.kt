@@ -18,11 +18,11 @@ enum class Category(val color: Color) {
     Gaming(Color(0xFF29CC6E)),
     Girly(Color(0xFF32C6FA)),
     Graffiti(Color(0xFF4D33FF)),
-    IPhone(Color(0xFFFFFFFF)),
+    Iphone(Color(0xFFFFFFFF)),
     Love(Color(0xFFCC29CC)),
     Minimalist(Color(0xFFFFFFFF)),
     Movie(Color(0xFFFF3351)),
     Nature(Color(0xFFF07B30)),
     Space(Color(0xFFFFEB33)),
-    SuperHero(Color(0xFFB8F238))
+    Superhero(Color(0xFFB8F238))
 }

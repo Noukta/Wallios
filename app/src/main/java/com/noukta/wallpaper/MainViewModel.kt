@@ -22,7 +22,10 @@ import kotlinx.coroutines.flow.asStateFlow
 class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
-    
+
+    var searchTag by mutableStateOf("")
+    var isSearchActive by mutableStateOf(false)
+
     var wallpaperIdx by mutableStateOf(0)
         private set
     var favoriteIdx by mutableStateOf(0)
@@ -31,7 +34,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     var showExit by mutableStateOf(false)
     var showReview by mutableStateOf(false)
 
-    //Home Screen Logic
     fun fetchWallpapers() {
         _uiState.value.wallpapers.clear()
         val db = Firebase.firestore
@@ -43,7 +45,8 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                     val wallpaper = Wallpaper(
                         id = document.id,
                         url = document.data["url"] as String,
-                        categories = listOf(Category.valueOf(tags[0]), Category.valueOf(tags[1]))
+                        category = Category.valueOf(tags[0].replaceFirstChar {it.titlecase()}),
+                        tags = tags
                     )
                     _uiState.value.wallpapers.add(wallpaper)
                 }
@@ -62,7 +65,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         wallpaperIdx = index.coerceAtMost(_uiState.value.wallpapers.lastIndex)
     }
 
-    //Favorites Screen Logic
     fun fetchFavorites() {
         DataScope.launch {
             _uiState.value.favorites.clear()
@@ -72,6 +74,13 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                 _uiState.value.favorites[i] = _uiState.value.wallpapers.find { it.id == id }!!
             }
         }
+    }
+
+    fun filterByTag(tag: String){
+        _uiState.value.searchResult.clear()
+        _uiState.value.searchResult.addAll(
+            _uiState.value.wallpapers.filter {it.match(tag)}
+        )
     }
 
     fun updateFavoriteIdx(index: Int = 0) {
@@ -84,17 +93,11 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
      */
     fun likeWallpaper(wallpaper: Wallpaper, liked: Boolean = false) {
         DataScope.launch {
-            if (liked) {
-                DatabaseHolder.Database.favoritesDao().delete(wallpaper)
-                //_uiState.value.favorites.remove(wallpaper)
-            } else {
-                DatabaseHolder.Database.favoritesDao().insertAll(wallpaper)
-                //_uiState.value.favorites.add(favoriteIdx, wallpaper)
-            }
+            if (liked) DatabaseHolder.Database.favoritesDao().delete(wallpaper)
+            else DatabaseHolder.Database.favoritesDao().insertAll(wallpaper)
         }
     }
 
-    //MainActivity Lifecycle Observing
     override fun onCreate(owner: LifecycleOwner) {
         (owner as MainActivity).onBackPressedDispatcher
             .addCallback(owner, object : OnBackPressedCallback(true) {

@@ -111,10 +111,10 @@ fun PreviewScreen(
             ) {
                 ElevatedAssistChip(
                     onClick = {},
-                    label = { Text(text = currentWallpaper.categories[0].name) },
+                    label = { Text(text = currentWallpaper.category.name) },
                     shape = RoundedCornerShape(50),
                     colors = AssistChipDefaults.elevatedAssistChipColors(
-                        containerColor = currentWallpaper.categories[0].color
+                        containerColor = currentWallpaper.category.color
                     )
                 )
             }

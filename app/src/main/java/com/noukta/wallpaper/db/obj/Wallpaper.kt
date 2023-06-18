@@ -11,7 +11,15 @@ import com.noukta.wallpaper.data.Category
 data class Wallpaper(
     @PrimaryKey val id: String,
     @Ignore val url: String,
-    @Ignore val categories: List<Category> = listOf()
+    @Ignore val category: Category,
+    @Ignore val tags: List<String> = listOf()
 ) {
-    constructor(id: String) : this(id, "", listOf())
+    constructor(id: String) : this(id, "",Category.Iphone, listOf())
+
+    fun match(tag: String): Boolean {
+        return tags.any {
+            it == tag
+        }
+    }
+
 }

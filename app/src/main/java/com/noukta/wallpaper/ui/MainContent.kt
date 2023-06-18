@@ -1,5 +1,6 @@
 package com.noukta.wallpaper.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -10,6 +11,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -44,7 +46,23 @@ fun MainContent(vm: MainViewModel) {
     }
 
     Scaffold(
-        topBar = { AppTopBar(currentScreen) },
+        topBar = {
+            AppTopBar(
+                screen = currentScreen,
+                query = vm.searchTag,
+                isSearchActive = vm.isSearchActive,
+                updateQuery = {
+                    vm.searchTag = it
+                },
+                searchByTag = {
+                    vm.filterByTag(it)
+                    uiState.searchResult.forEach { w ->
+                        Log.d("Filter", w.tags.toString())
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        },
         bottomBar = {
             BottomNavigationBar(
                 screen = currentScreen,

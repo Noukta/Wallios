@@ -1,9 +1,9 @@
 package com.noukta.wallpaper.ui.components
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -17,29 +17,52 @@ import com.noukta.wallpaper.ui.nav.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar(screen: Screen, modifier: Modifier = Modifier) {
+fun AppTopBar(
+    screen: Screen,
+    query: String,
+    isSearchActive: Boolean,
+    updateQuery: (String) -> Unit,
+    searchByTag: (String) -> Unit,
+    modifier: Modifier = Modifier) {
     if (screen in listOf(Screen.Home, Screen.Favorites)) {
         TopAppBar(
             title = {
-                Row() {
-                    if(screen == Screen.Home)
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_topbar_foreground),
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 5.dp),
-                            tint = Color.Unspecified
-                        )
-                    Text(stringResource(
-                        when(screen){
-                            Screen.Home -> R.string.app_name
-                            else -> screen.titleRes!!
-                        }
-                    ))
+                if(screen == Screen.Favorites) {
+                    Text(
+                        stringResource(screen.titleRes!!)
+                    )
                 }
             },
             modifier = modifier,
             actions = {
-                // TODO: search and menu button
+                if(screen == Screen.Home) {
+                    SearchBar(
+                        query = query,
+                        onQueryChange = {
+                            updateQuery(it)
+                        },
+                        onSearch = {
+                            searchByTag(it)
+                        },
+                        active = isSearchActive,
+                        onActiveChange = {
+
+                        },
+                        modifier = Modifier.padding(horizontal = 64.dp),
+                        placeholder = {
+                            Text(stringResource( R.string.app_name))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_topbar_foreground),
+                                contentDescription = null,
+                                tint = Color.Unspecified
+                            )
+                        }
+                    ) {
+
+                    }
+                }
             }
         )
     }
