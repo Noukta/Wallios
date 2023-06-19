@@ -66,8 +66,10 @@ fun WallpapersGrid(
     }
 
     LaunchedEffect(scrollUp) {
-        scrollUp = false
-        listState.animateScrollToItem(0)
+        if(scrollUp) {
+            listState.animateScrollToItem(0)
+            scrollUp = false
+        }
     }
 
     LazyVerticalGrid(
