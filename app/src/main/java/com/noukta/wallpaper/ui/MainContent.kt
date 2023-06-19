@@ -54,8 +54,9 @@ fun MainContent(vm: MainViewModel) {
             },
             searchByTag = {
                 vm.filterByTag(it)
-                navController.navigate(Screen.Search.route){
-                    this.launchSingleTop = true
+                navController.navigate(Screen.Search.route) {
+                    launchSingleTop = true
+                    popUpTo(Screen.Home.route)
                 }
             },
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -102,12 +103,16 @@ fun MainContent(vm: MainViewModel) {
                 })
             }
             composable(Screen.Search.route) {
-                SearchScreen(wallpapers = uiState.searchResult, onLikeClick = { wallpaper, liked ->
-                    vm.likeWallpaper(wallpaper, liked)
-                }, onWallpaperPreview = { wallpaperIdx ->
-                    vm.updateWallpaperIdx(wallpaperIdx, uiState.searchResult.lastIndex)
-                    navController.navigate(Screen.Preview.route)
-                })
+                SearchScreen(
+                    wallpapers = uiState.searchResult,
+                    onLikeClick = { wallpaper, liked ->
+                        vm.likeWallpaper(wallpaper, liked)
+                    },
+                    onWallpaperPreview = { wallpaperIdx ->
+                        vm.updateWallpaperIdx(wallpaperIdx, uiState.searchResult.lastIndex)
+                        navController.navigate(Screen.Preview.route)
+                    }
+                )
             }
             composable(Screen.Preview.route) {
                 val prev = navController.previousBackStackEntry?.destination?.route
@@ -118,10 +123,17 @@ fun MainContent(vm: MainViewModel) {
                         else -> uiState.searchResult
                     },
                     initialWallpaper = vm.wallpaperIdx,
-                ) { wallpaper, liked ->
-                    vm.likeWallpaper(wallpaper, liked)
-                }
-
+                    onLikeClick = { wallpaper, liked ->
+                        vm.likeWallpaper(wallpaper, liked)
+                    },
+                    onTagClick = { category ->
+                        vm.filterByTag(category.name)
+                        navController.navigate(Screen.Search.route) {
+                            launchSingleTop = true
+                            popUpTo(Screen.Home.route)
+                        }
+                    }
+                )
             }
         }
     }

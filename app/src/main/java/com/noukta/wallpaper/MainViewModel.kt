@@ -28,7 +28,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     var wallpaperIdx by mutableStateOf(0)
         private set
-
     var showExit by mutableStateOf(false)
     var showReview by mutableStateOf(false)
 
@@ -61,6 +60,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     fun updateWallpaperIdx(index: Int, lastIndex: Int) {
         wallpaperIdx = index.coerceAtMost(lastIndex)
+        Log.d("Index", "index: $index, last: $lastIndex")
     }
 
     fun fetchFavorites() {

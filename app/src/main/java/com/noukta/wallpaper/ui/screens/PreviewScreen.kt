@@ -33,12 +33,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.noukta.wallpaper.R
 import com.noukta.wallpaper.admob.AdmobHelper
+import com.noukta.wallpaper.data.Category
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ext.shareWallpaper
@@ -56,7 +58,8 @@ import com.skydoves.landscapist.coil.CoilImage
 fun PreviewScreen(
     wallpapers: List<Wallpaper>,
     initialWallpaper: Int,
-    onLikeClick: (Wallpaper, Boolean) -> Unit
+    onLikeClick: (Wallpaper, Boolean) -> Unit,
+    onTagClick: (Category) -> Unit
 ) {
     val context = LocalContext.current
     val snackState = remember { SnackbarHostState() }
@@ -108,11 +111,14 @@ fun PreviewScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ElevatedAssistChip(
-                    onClick = {},
+                    onClick = {
+                              onTagClick(currentWallpaper.category)
+                    },
                     label = { Text(text = currentWallpaper.category.name) },
                     shape = RoundedCornerShape(50),
                     colors = AssistChipDefaults.elevatedAssistChipColors(
-                        containerColor = currentWallpaper.category.color
+                        containerColor = currentWallpaper.category.color,
+                        labelColor = Color.Black
                     )
                 )
             }
