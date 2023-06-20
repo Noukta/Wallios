@@ -60,7 +60,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     fun updateWallpaperIdx(index: Int, lastIndex: Int) {
         wallpaperIdx = index.coerceAtMost(lastIndex)
-        Log.d("Index", "index: $index, last: $lastIndex")
     }
 
     fun fetchFavorites() {
@@ -74,11 +73,18 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         }
     }
 
-    fun filterByTag(tag: String){
-        _uiState.value.searchResult.clear()
-        _uiState.value.searchResult.addAll(
-            _uiState.value.wallpapers.filter {it.match(tag)}
-        )
+    fun searchByText(text: String){
+        DataScope.launch {
+            _uiState.value.wallpapers.forEach {
+                it.match(text)
+            }
+            _uiState.value.searchResult.clear()
+            _uiState.value.searchResult.addAll(
+                _uiState.value.wallpapers
+                    .filter { it.relevance > 0 }
+                    .sortedByDescending { it.relevance }
+            )
+        }
     }
 
     /**

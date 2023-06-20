@@ -11,17 +11,19 @@ import com.noukta.wallpaper.data.Category
 data class Wallpaper(
     @PrimaryKey val id: String,
     @Ignore val url: String,
-    @Ignore val category: Category,
-    @Ignore val tags: List<String> = listOf()
+    @Ignore val category: Category = Category.Iphone,
+    @Ignore val tags: List<String> = listOf(),
+    @Ignore var relevance: Int = 0
 ) {
-    constructor(id: String) : this(id, "",Category.Iphone, listOf())
+    constructor(id: String) : this(id, url="")
 
-    fun match(tag: String): Boolean {
-        val tagVariants = listOf(
-            tag.replace(" ", "").lowercase()
-        ) + tag.lowercase().split(" ")
-        return tags.any {
-            it in tagVariants
+    fun match(text: String) {
+        val wordList = text.lowercase().split(" ").toMutableList()
+        val wordInSingularList = mutableListOf<String>()
+        wordList.forEach {
+            wordInSingularList.add(it.removeSuffix("s"))
         }
+        val wordSet = (wordList + wordInSingularList).distinct().toSet()
+        relevance =  tags.intersect(wordSet).size
     }
 }

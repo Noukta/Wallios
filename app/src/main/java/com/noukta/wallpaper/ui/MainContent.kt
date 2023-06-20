@@ -53,10 +53,11 @@ fun MainContent(vm: MainViewModel) {
                 vm.searchTag = it
             },
             searchByTag = {
-                vm.filterByTag(it)
+                vm.searchByText(it)
                 navController.navigate(Screen.Search.route) {
                     launchSingleTop = true
                     popUpTo(Screen.Home.route)
+                    //restoreState = false
                 }
             },
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -127,7 +128,7 @@ fun MainContent(vm: MainViewModel) {
                         vm.likeWallpaper(wallpaper, liked)
                     },
                     onTagClick = { category ->
-                        vm.filterByTag(category.name)
+                        vm.searchByText(category.name)
                         navController.navigate(Screen.Search.route) {
                             launchSingleTop = true
                             popUpTo(Screen.Home.route)

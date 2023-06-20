@@ -79,7 +79,7 @@ fun WallpapersGrid(
             .padding(10.dp)
             .pullRefresh(refreshState, refreshable)
     ) {
-        itemsIndexed(wallpapers) { index, wallpaper ->
+        if(wallpapers.isNotEmpty()) itemsIndexed(wallpapers) { index, wallpaper ->
             WallpaperThumbnail(
                 wallpaper = wallpaper,
                 onLikeClick = { liked ->
