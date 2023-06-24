@@ -55,7 +55,7 @@ android {
 
 dependencies {
     def lifecycle_version = '2.6.1'
-    def room_version = '2.5.1'
+    def room_version = '2.5.2'
     // core - lifecycle - activity - navigation
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"

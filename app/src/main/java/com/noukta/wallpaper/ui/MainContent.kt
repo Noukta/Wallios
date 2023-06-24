@@ -48,7 +48,6 @@ fun MainContent(vm: MainViewModel) {
         AppTopBar(
             screen = currentScreen,
             query = vm.searchTag,
-            isSearchActive = vm.isSearchActive,
             updateQuery = {
                 vm.searchTag = it
             },
@@ -57,8 +56,10 @@ fun MainContent(vm: MainViewModel) {
                 navController.navigate(Screen.Search.route) {
                     launchSingleTop = true
                     popUpTo(Screen.Home.route)
-                    //restoreState = false
                 }
+            },
+            onLogoClick = {
+                navController.navigateUp()
             },
             modifier = Modifier.padding(horizontal = 16.dp)
         )

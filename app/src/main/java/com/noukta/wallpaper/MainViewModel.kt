@@ -24,7 +24,6 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     var searchTag by mutableStateOf("")
-    var isSearchActive by mutableStateOf(false)
 
     var wallpaperIdx by mutableStateOf(0)
         private set

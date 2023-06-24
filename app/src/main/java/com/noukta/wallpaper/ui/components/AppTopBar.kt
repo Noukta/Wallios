@@ -19,29 +19,32 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.noukta.wallpaper.R
 import com.noukta.wallpaper.ui.nav.Screen
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AppTopBar(
     screen: Screen,
     query: String,
-    isSearchActive: Boolean,
     updateQuery: (String) -> Unit,
     searchByTag: (String) -> Unit,
+    onLogoClick : () -> Unit,
     modifier: Modifier = Modifier) {
     val animator = remember {
         Animatable(0f)
     }
     when(screen){
         Screen.Home, Screen.Search ->{
+            val keyboardController = LocalSoftwareKeyboardController.current
             LaunchedEffect(Unit) {
                 if(animator.value != 1f) {
                     animator.animateTo(
@@ -57,18 +60,23 @@ fun AppTopBar(
             TopAppBar(
                 title = {
                     if(animator.value > 0f){
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_topbar_foreground),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .graphicsLayer(
-                                scaleX = animator.value,
-                                scaleY = animator.value,
-                                alpha = animator.value,
-                                rotationZ = -360f * (1 - animator.value)
-                            ),
-                            tint = Color.Unspecified
-                        )
+                        IconButton(
+                            onClick = onLogoClick,
+                            enabled = screen != Screen.Home
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_topbar_foreground),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .graphicsLayer(
+                                        scaleX = animator.value,
+                                        scaleY = animator.value,
+                                        alpha = animator.value,
+                                        rotationZ = -360f * (1 - animator.value)
+                                    ),
+                                tint = Color.Unspecified
+                            )
+                        }
                     }
                 },
                 modifier = modifier,
@@ -80,12 +88,12 @@ fun AppTopBar(
                         },
                         onSearch = {
                             searchByTag(it)
+                            keyboardController?.hide()
                         },
-                        active = isSearchActive,
+                        active = false,
                         onActiveChange = {
-
                         },
-                        modifier = Modifier.fillMaxWidth(1f - 0.2f * animator.value),
+                        modifier = Modifier.fillMaxWidth(1f - .2f * animator.value),
                         placeholder = {
                             if(animator.value == 1f)
                                 Text(stringResource( R.string.search_wallpapers))
@@ -112,7 +120,10 @@ fun AppTopBar(
                         },
                         trailingIcon = {
                             if(animator.value == 1f)
-                                IconButton(onClick = { searchByTag(query) }) {
+                                IconButton(onClick = {
+                                    searchByTag(query)
+                                    keyboardController?.hide()
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.Search,
                                         contentDescription = null
