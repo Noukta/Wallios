@@ -18,4 +18,10 @@
     <string name="share_message">Check this wallpaper App: %s</string>
     <string name="changing_wallpaper">Changing wallpaper…</string>
     <string name="search_wallpapers">Search for wallpapers</string>
+    <string name="enjoy_ask">Are you enjoying Wallios?</string>
+    <string name="rate_ask">Rate us on Google Play</string>
+    <string name="remind">Remind me</string>
+    <string name="not_really">Not really</string>
+    <string name="love_it">Love it!</string>
+    <string name="rate">Rate</string>
 </resources>

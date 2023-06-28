@@ -15,6 +15,7 @@ import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ui.UiState
 import com.noukta.wallpaper.util.DataScope
+import com.noukta.wallpaper.util.PrefHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +30,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         private set
     var showExit by mutableStateOf(false)
     var showReview by mutableStateOf(false)
+    private var startTime: Long = 0
 
     fun fetchWallpapers() {
         _uiState.value.wallpapers.clear()
@@ -104,5 +106,16 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                     showExit = !showExit
                 }
             })
+    }
+
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        startTime = System.currentTimeMillis()
+    }
+    override fun onStop(owner: LifecycleOwner) {
+        super.onStop(owner)
+        var timeSpent = System.currentTimeMillis() - startTime
+        timeSpent += PrefHelper.getTimeSpent()
+        PrefHelper.setTimeSpent(timeSpent)
     }
 }
