@@ -9,6 +9,8 @@ object PrefHelper {
     private const val consentStatus = "ConsentStatus"
     private const val reviewStatus = "reviewStatus"
     private const val timeSpent = "TimeSpent"
+    private const val lastPostNotificationsRequestTime = "LastPostNotificationsRequestTime"
+
 
     private const val prefFile = "preferences"
     private lateinit var preferences: SharedPreferences
@@ -58,5 +60,14 @@ object PrefHelper {
 
     fun getTimeSpent(): Long{
         return getLong(timeSpent, 0)
+    }
+
+    fun resetLastPostNotificationsRequestTime() {
+        val currentTime= System.currentTimeMillis()
+        setLong(lastPostNotificationsRequestTime, currentTime)
+    }
+
+    fun getLastPostNotificationsRequestTime(): Long {
+        return getLong(lastPostNotificationsRequestTime, 0)
     }
 }
