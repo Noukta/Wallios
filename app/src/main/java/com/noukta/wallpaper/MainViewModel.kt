@@ -1,18 +1,25 @@
 package com.noukta.wallpaper
 
+import android.app.Activity
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.noukta.wallpaper.data.Category
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
+import com.noukta.wallpaper.ext.requestNotificationsPermission
 import com.noukta.wallpaper.ui.UiState
 import com.noukta.wallpaper.util.DataScope
 import com.noukta.wallpaper.util.PrefHelper
@@ -31,6 +38,8 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     var showExit by mutableStateOf(false)
     var showReview by mutableStateOf(false)
     private var startTime: Long = 0
+
+    private lateinit var auth: FirebaseAuth
 
     fun fetchWallpapers() {
         _uiState.value.wallpapers.clear()
@@ -99,7 +108,11 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
+        auth = Firebase.auth
+        requestNotificationsPermission(owner as Activity)
         (owner as MainActivity).onBackPressedDispatcher
             .addCallback(owner, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -111,6 +124,23 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
         startTime = System.currentTimeMillis()
+
+        auth.signInAnonymously()
+            .addOnCompleteListener(owner as Activity) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d("FirestoreAuth", "signInAnonymously:success")
+                    val user = auth.currentUser
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w("FirestoreAuth", "signInAnonymously:failure", task.exception)
+                    Toast.makeText(
+                        owner,
+                        "Authentication failed.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            }
     }
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
