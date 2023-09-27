@@ -54,6 +54,7 @@ android {
 }
 
 dependencies {
+
     def lifecycle_version = '2.6.1'
     def room_version = '2.5.2'
     // core - lifecycle - activity - navigation
@@ -80,13 +81,15 @@ dependencies {
     // work
     implementation "androidx.work:work-runtime-ktx:2.8.1"
     //Admob and UMP
-    implementation 'com.google.android.gms:play-services-ads:22.1.0'
-    implementation 'com.google.android.ump:user-messaging-platform:2.0.0'
+    implementation 'com.google.android.gms:play-services-ads:22.4.0'
+    implementation 'com.google.android.ump:user-messaging-platform:2.1.0'
     //Firebase
-    implementation platform('com.google.firebase:firebase-bom:32.1.0')
+    implementation platform('com.google.firebase:firebase-bom:32.3.1')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
     //Landscapist-coil
     implementation "com.github.skydoves:landscapist-coil:2.2.1"
 
