@@ -18,3 +18,5 @@ Following the recommended practices by google I made this app using the MVVM arc
 * Room
 * Firebase
 * material3
+* Landscapist-coil
+* Admob
