@@ -12,10 +12,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 import com.noukta.wallpaper.data.Category
 import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
@@ -26,6 +26,7 @@ import com.noukta.wallpaper.util.PrefHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Locale
 
 class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     private val _uiState = MutableStateFlow(UiState())
@@ -52,7 +53,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                     val wallpaper = Wallpaper(
                         id = document.id,
                         url = document.data["url"] as String,
-                        category = Category.valueOf(tags[0].replaceFirstChar {it.titlecase()}),
+                        category = Category.valueOf(tags[0].replaceFirstChar {it.titlecase(Locale.getDefault())}),
                         tags = tags
                     )
                     _uiState.value.wallpapers.add(wallpaper)
