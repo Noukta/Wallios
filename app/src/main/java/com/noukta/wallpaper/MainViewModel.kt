@@ -82,11 +82,12 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     fun fetchFavorites() {
         viewModelScope.launch(Dispatchers.IO) {
-            val favoriteIds = DatabaseHolder.Database.favoritesDao().getAll()
-            val favoriteWallpapers = favoriteIds.mapNotNull { favorite ->
-                _uiState.value.wallpapers.find { it.id == favorite.id }
+            DatabaseHolder.Database.favoritesDao().getAll().collect { favoriteIds ->
+                val favoriteWallpapers = favoriteIds.mapNotNull { favorite ->
+                    _uiState.value.wallpapers.find { it.id == favorite.id }
+                }
+                _uiState.update { it.copy(favorites = favoriteWallpapers) }
             }
-            _uiState.update { it.copy(favorites = favoriteWallpapers) }
         }
     }
 

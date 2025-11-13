@@ -6,24 +6,25 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.noukta.wallpaper.db.obj.Wallpaper
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavoritesDao {
     @Query("SELECT * FROM favorites")
-    fun getAll(): List<Wallpaper>
+    fun getAll(): Flow<List<Wallpaper>>
 
     @Query("SELECT * FROM favorites WHERE id = :id")
-    fun findById(id: Int): Wallpaper
+    suspend fun findById(id: String): Wallpaper?
 
     @Query("SELECT EXISTS (SELECT 1 FROM favorites WHERE id = :id)")
-    fun exists(id: String): Boolean
+    suspend fun exists(id: String): Boolean
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(vararg wallpaper: Wallpaper)
+    suspend fun insertAll(vararg wallpaper: Wallpaper)
 
     @Delete
-    fun delete(wallpaper: Wallpaper)
+    suspend fun delete(wallpaper: Wallpaper)
 
     @Query("DELETE FROM favorites")
-    fun deleteAll()
+    suspend fun deleteAll()
 }
