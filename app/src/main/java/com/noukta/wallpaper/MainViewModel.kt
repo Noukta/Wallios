@@ -6,12 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import com.noukta.wallpaper.data.Category
-import com.noukta.wallpaper.db.DatabaseHolder
+import com.noukta.wallpaper.db.dao.FavoritesDao
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ui.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,8 +19,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val favoritesDao: FavoritesDao
+) : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
@@ -38,8 +43,7 @@ class MainViewModel : ViewModel() {
 
     fun fetchWallpapers(limit: Long = WALLPAPERS_PAGE_SIZE) {
         _uiState.update { it.copy(isLoading = true, error = null) }
-        val db = Firebase.firestore
-        db.collection("wallpapers")
+        firestore.collection("wallpapers")
             .limit(limit)
             .get()
             .addOnSuccessListener { result ->
@@ -75,7 +79,7 @@ class MainViewModel : ViewModel() {
 
     fun fetchFavorites() {
         viewModelScope.launch(Dispatchers.IO) {
-            DatabaseHolder.Database.favoritesDao().getAll().collect { favoriteIds ->
+            favoritesDao.getAll().collect { favoriteIds ->
                 val favoriteWallpapers = favoriteIds.mapNotNull { favorite ->
                     _uiState.value.wallpapers.find { it.id == favorite.id }
                 }
@@ -102,8 +106,8 @@ class MainViewModel : ViewModel() {
      */
     fun likeWallpaper(wallpaper: Wallpaper, liked: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (liked) DatabaseHolder.Database.favoritesDao().delete(wallpaper)
-            else DatabaseHolder.Database.favoritesDao().insertAll(wallpaper)
+            if (liked) favoritesDao.delete(wallpaper)
+            else favoritesDao.insertAll(wallpaper)
         }
     }
 

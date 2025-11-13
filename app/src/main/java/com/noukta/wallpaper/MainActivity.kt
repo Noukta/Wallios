@@ -15,7 +15,9 @@ import com.noukta.wallpaper.ext.requestNotificationsPermission
 import com.noukta.wallpaper.ui.MainContent
 import com.noukta.wallpaper.ui.theme.WallpaperAppTheme
 import com.noukta.wallpaper.util.PrefHelper
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
     private lateinit var auth: FirebaseAuth
