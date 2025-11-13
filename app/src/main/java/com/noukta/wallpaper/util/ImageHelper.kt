@@ -5,14 +5,20 @@ import android.graphics.Bitmap
 import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 object ImageHelper {
+    private val imageScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     fun urlToBitmap(
         imageURL: String?,
         context: Context,
         onSuccess: (bitmap: Bitmap) -> Unit
     ) {
-        DataScope.launch {
+        imageScope.launch {
             val request = buildRequest(context, imageURL)
                 .target {
                     onSuccess(it.toBitmap())

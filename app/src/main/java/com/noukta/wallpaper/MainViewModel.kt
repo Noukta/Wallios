@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -21,12 +22,13 @@ import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ext.requestNotificationsPermission
 import com.noukta.wallpaper.ui.UiState
-import com.noukta.wallpaper.util.DataScope
 import com.noukta.wallpaper.util.PrefHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class MainViewModel : ViewModel(), DefaultLifecycleObserver {
@@ -79,7 +81,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     }
 
     fun fetchFavorites() {
-        DataScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val favoriteIds = DatabaseHolder.Database.favoritesDao().getAll()
             val favoriteWallpapers = favoriteIds.mapNotNull { favorite ->
                 _uiState.value.wallpapers.find { it.id == favorite.id }
@@ -89,7 +91,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     }
 
     fun searchByText(text: String){
-        DataScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val searchResults = _uiState.value.wallpapers
                 .map { wallpaper ->
                     wallpaper.apply { match(text) }
@@ -105,7 +107,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
      * @param liked true means already liked (false by default)
      */
     fun likeWallpaper(wallpaper: Wallpaper, liked: Boolean = false) {
-        DataScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (liked) DatabaseHolder.Database.favoritesDao().delete(wallpaper)
             else DatabaseHolder.Database.favoritesDao().insertAll(wallpaper)
         }
