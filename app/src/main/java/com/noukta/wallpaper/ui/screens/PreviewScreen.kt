@@ -47,11 +47,13 @@ import com.noukta.wallpaper.ext.shareWallpaper
 import com.noukta.wallpaper.settings.AdUnit.INTERSTITIAL
 import com.noukta.wallpaper.ui.components.ListDialog
 import com.noukta.wallpaper.ui.theme.favorite_color
-import com.noukta.wallpaper.util.DataScope
 import com.noukta.wallpaper.util.ImageHelper
 import com.noukta.wallpaper.util.WallpaperWorker
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil.CoilImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -77,8 +79,8 @@ fun PreviewScreen(
         mutableStateOf(false)
     }
     LaunchedEffect(pagerState.currentPage) {
-        DataScope.launch {
-            liked = DatabaseHolder.Database.favoritesDao().exists(currentWallpaper.id)
+        liked = withContext(Dispatchers.IO) {
+            DatabaseHolder.Database.favoritesDao().exists(currentWallpaper.id)
         }
     }
 

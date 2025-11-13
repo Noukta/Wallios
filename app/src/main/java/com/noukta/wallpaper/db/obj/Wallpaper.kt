@@ -18,12 +18,47 @@ data class Wallpaper(
     constructor(id: String) : this(id, url="")
 
     fun match(text: String) {
-        val wordList = text.lowercase().split(" ").toMutableList()
-        val wordInSingularList = mutableListOf<String>()
-        wordList.forEach {
-            wordInSingularList.add(it.removeSuffix("s"))
+        val query = text.lowercase().trim()
+        if (query.isEmpty()) {
+            relevance = 0
+            return
         }
-        val wordSet = (wordList + wordInSingularList).distinct().toSet()
-        relevance =  tags.intersect(wordSet).size
+
+        val words = query.split("\\s+".toRegex())
+        var score = 0
+
+        tags.forEach { tag ->
+            val tagLower = tag.lowercase()
+
+            // Exact match gets highest score
+            if (tagLower == query) {
+                score += 100
+            }
+            // Exact word match (tag equals any query word)
+            else if (words.any { it == tagLower }) {
+                score += 50
+            }
+            // Tag contains the full query
+            else if (tagLower.contains(query)) {
+                score += 25
+            }
+            // Tag contains any individual query word
+            else if (words.any { word -> tagLower.contains(word) && word.length > 2 }) {
+                score += 10
+            }
+            // Fuzzy match: check for singular/plural variations
+            else {
+                words.forEach { word ->
+                    val singular = word.removeSuffix("s")
+                    val plural = if (word.endsWith("s")) word else word + "s"
+                    when {
+                        tagLower == singular || tagLower == plural -> score += 40
+                        tagLower.contains(singular) || tagLower.contains(plural) -> score += 8
+                    }
+                }
+            }
+        }
+
+        relevance = score
     }
 }

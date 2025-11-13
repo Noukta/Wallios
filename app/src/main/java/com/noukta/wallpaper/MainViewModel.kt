@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -21,11 +22,13 @@ import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ext.requestNotificationsPermission
 import com.noukta.wallpaper.ui.UiState
-import com.noukta.wallpaper.util.DataScope
 import com.noukta.wallpaper.util.PrefHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class MainViewModel : ViewModel(), DefaultLifecycleObserver {
@@ -42,31 +45,41 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     private lateinit var auth: FirebaseAuth
 
-    fun fetchWallpapers() {
-        _uiState.value.wallpapers.clear()
+    companion object {
+        private const val WALLPAPERS_PAGE_SIZE = 50L
+    }
+
+    fun fetchWallpapers(limit: Long = WALLPAPERS_PAGE_SIZE) {
+        _uiState.update { it.copy(isLoading = true, error = null) }
         val db = Firebase.firestore
         db.collection("wallpapers")
+            .limit(limit)
             .get()
             .addOnSuccessListener { result ->
+                val wallpaperList = mutableListOf<Wallpaper>()
                 for (document in result) {
-                    val tags: List<String> = document.get("tags") as List<String>
-                    val wallpaper = Wallpaper(
-                        id = document.id,
-                        url = document.data["url"] as String,
-                        category = Category.valueOf(tags[0].replaceFirstChar {it.titlecase(Locale.getDefault())}),
-                        tags = tags
-                    )
-                    _uiState.value.wallpapers.add(wallpaper)
+                    val tags: List<String> = document.get("tags") as? List<String> ?: emptyList()
+                    if (tags.isNotEmpty()) {
+                        val wallpaper = Wallpaper(
+                            id = document.id,
+                            url = document.data["url"] as? String ?: "",
+                            category = Category.valueOf(tags[0].replaceFirstChar {it.titlecase(Locale.getDefault())}),
+                            tags = tags
+                        )
+                        wallpaperList.add(wallpaper)
+                    }
                 }
-                shuffleWallpapers()
+                _uiState.update { it.copy(wallpapers = wallpaperList.shuffled(), isLoading = false) }
+                Log.d("Firestore", "Loaded ${wallpaperList.size} wallpapers")
             }
             .addOnFailureListener { exception ->
                 Log.w("Firestore", "Error getting documents.", exception)
+                _uiState.update { it.copy(error = exception.message, isLoading = false) }
             }
     }
 
     fun shuffleWallpapers() {
-        _uiState.value.wallpapers.shuffle()
+        _uiState.update { it.copy(wallpapers = it.wallpapers.shuffled()) }
     }
 
     fun updateWallpaperIdx(index: Int, lastIndex: Int) {
@@ -74,27 +87,25 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
     }
 
     fun fetchFavorites() {
-        DataScope.launch {
-            _uiState.value.favorites.clear()
-            _uiState.value.favorites.addAll(DatabaseHolder.Database.favoritesDao().getAll())
-            for (i in 0.._uiState.value.favorites.lastIndex){
-                val id  = _uiState.value.favorites[i].id
-                _uiState.value.favorites[i] = _uiState.value.wallpapers.find { it.id == id }!!
+        viewModelScope.launch(Dispatchers.IO) {
+            DatabaseHolder.Database.favoritesDao().getAll().collect { favoriteIds ->
+                val favoriteWallpapers = favoriteIds.mapNotNull { favorite ->
+                    _uiState.value.wallpapers.find { it.id == favorite.id }
+                }
+                _uiState.update { it.copy(favorites = favoriteWallpapers) }
             }
         }
     }
 
     fun searchByText(text: String){
-        DataScope.launch {
-            _uiState.value.wallpapers.forEach {
-                it.match(text)
-            }
-            _uiState.value.searchResult.clear()
-            _uiState.value.searchResult.addAll(
-                _uiState.value.wallpapers
-                    .filter { it.relevance > 0 }
-                    .sortedByDescending { it.relevance }
-            )
+        viewModelScope.launch(Dispatchers.Default) {
+            val searchResults = _uiState.value.wallpapers
+                .map { wallpaper ->
+                    wallpaper.apply { match(text) }
+                }
+                .filter { it.relevance > 0 }
+                .sortedByDescending { it.relevance }
+            _uiState.update { it.copy(searchResult = searchResults) }
         }
     }
 
@@ -103,7 +114,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
      * @param liked true means already liked (false by default)
      */
     fun likeWallpaper(wallpaper: Wallpaper, liked: Boolean = false) {
-        DataScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (liked) DatabaseHolder.Database.favoritesDao().delete(wallpaper)
             else DatabaseHolder.Database.favoritesDao().insertAll(wallpaper)
         }
@@ -137,7 +148,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                     Log.w("FirestoreAuth", "signInAnonymously:failure", task.exception)
                     Toast.makeText(
                         owner,
-                        "Authentication failed.",
+                        owner.getString(R.string.auth_failed),
                         Toast.LENGTH_SHORT,
                     ).show()
                 }
