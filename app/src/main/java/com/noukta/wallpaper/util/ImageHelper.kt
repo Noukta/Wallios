@@ -12,6 +12,13 @@ import kotlinx.coroutines.launch
 
 object ImageHelper {
     private val imageScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private lateinit var imageLoader: ImageLoader
+
+    fun init(context: Context) {
+        imageLoader = ImageLoader.Builder(context.applicationContext)
+            .crossfade(true)
+            .build()
+    }
 
     fun urlToBitmap(
         imageURL: String?,
@@ -24,7 +31,7 @@ object ImageHelper {
                     onSuccess(it.toBitmap())
                 }
                 .build()
-            ImageLoader(context).enqueue(request)
+            imageLoader.enqueue(request)
         }
     }
 
