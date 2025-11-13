@@ -24,4 +24,9 @@
     <string name="not_really">Not really</string>
     <string name="love_it">Love it!</string>
     <string name="rate">Rate</string>
+    <string name="auth_failed">Authentication failed.</string>
+    <string name="error_loading_wallpapers">Error loading wallpapers</string>
+    <string name="notification_permission_title">Wallios Notifications</string>
+    <string name="notification_permission_message">Allow receiving notifications</string>
+    <string name="permission_ok">OK</string>
 </resources>

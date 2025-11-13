@@ -141,7 +141,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                     Log.w("FirestoreAuth", "signInAnonymously:failure", task.exception)
                     Toast.makeText(
                         owner,
-                        "Authentication failed.",
+                        owner.getString(R.string.auth_failed),
                         Toast.LENGTH_SHORT,
                     ).show()
                 }

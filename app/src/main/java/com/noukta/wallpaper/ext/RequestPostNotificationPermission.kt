@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
 import com.noukta.wallpaper.MainActivity
+import com.noukta.wallpaper.R
 import com.noukta.wallpaper.settings.Notification.POST_NOTIFICATIONS_PERMISSION_REQUEST_INTERVAL
 import com.noukta.wallpaper.util.PrefHelper
 
@@ -41,11 +42,10 @@ fun requestNotificationsPermission(context: Context) {
 
     when {
         shouldShowRequestPermissionRationale(context, permission) -> {
-            val explanation = "Allow receiving notifications"
             val dialog = AlertDialog.Builder(context)
-                .setTitle("Wallios Notifications")
-                .setMessage(explanation)
-                .setPositiveButton("OK") { _, _ ->
+                .setTitle(context.getString(R.string.notification_permission_title))
+                .setMessage(context.getString(R.string.notification_permission_message))
+                .setPositiveButton(context.getString(R.string.permission_ok)) { _, _ ->
                     requestPermissionLauncher.launch(permission)
                 }
                 .create()
