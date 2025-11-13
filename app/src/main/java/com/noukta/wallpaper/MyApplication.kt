@@ -9,7 +9,7 @@ import com.noukta.wallpaper.util.PrefHelper
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        DatabaseHolder().create(this)
+        DatabaseHolder.init(this)
         PrefHelper.init(this)
         AdmobHelper.init(this)
         ImageHelper.init(this)
