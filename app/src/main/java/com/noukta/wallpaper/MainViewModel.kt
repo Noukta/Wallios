@@ -45,10 +45,15 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
 
     private lateinit var auth: FirebaseAuth
 
-    fun fetchWallpapers() {
+    companion object {
+        private const val WALLPAPERS_PAGE_SIZE = 50L
+    }
+
+    fun fetchWallpapers(limit: Long = WALLPAPERS_PAGE_SIZE) {
         _uiState.update { it.copy(isLoading = true, error = null) }
         val db = Firebase.firestore
         db.collection("wallpapers")
+            .limit(limit)
             .get()
             .addOnSuccessListener { result ->
                 val wallpaperList = mutableListOf<Wallpaper>()
@@ -65,6 +70,7 @@ class MainViewModel : ViewModel(), DefaultLifecycleObserver {
                     }
                 }
                 _uiState.update { it.copy(wallpapers = wallpaperList.shuffled(), isLoading = false) }
+                Log.d("Firestore", "Loaded ${wallpaperList.size} wallpapers")
             }
             .addOnFailureListener { exception ->
                 Log.w("Firestore", "Error getting documents.", exception)
