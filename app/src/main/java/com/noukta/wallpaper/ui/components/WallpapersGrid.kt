@@ -39,7 +39,8 @@ fun WallpapersGrid(
     onLikeClick: (Wallpaper, Boolean) -> Unit,
     refreshable: Boolean = false,
     onRefresh: () -> Unit = {},
-    onWallpaperPreview: (wallpaperIdx: Int) -> Unit
+    onWallpaperPreview: (wallpaperIdx: Int) -> Unit,
+    isFavorite: suspend (String) -> Boolean
 ) {
     val listState = rememberLazyGridState()
 
@@ -84,10 +85,12 @@ fun WallpapersGrid(
                 wallpaper = wallpaper,
                 onLikeClick = { liked ->
                     onLikeClick(wallpaper, liked)
-                }
-            ) {
-                onWallpaperPreview(index)
-            }
+                },
+                onClick = {
+                    onWallpaperPreview(index)
+                },
+                isFavorite = isFavorite
+            )
         }
     }
 

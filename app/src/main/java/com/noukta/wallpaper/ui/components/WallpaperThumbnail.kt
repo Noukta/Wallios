@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.memory.MemoryCache
 import coil.request.ImageRequest
-import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ui.theme.favorite_color
 import com.skydoves.landscapist.ImageOptions
@@ -42,15 +41,18 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun WallpaperThumbnail(
-    wallpaper: Wallpaper, onLikeClick: (Boolean) -> Unit, onClick: () -> Unit
+    wallpaper: Wallpaper,
+    onLikeClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
+    isFavorite: suspend (String) -> Boolean
 ) {
     val context = LocalContext.current
     var liked by remember {
         mutableStateOf(false)
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(wallpaper.id) {
         withContext(Dispatchers.IO) {
-            liked = DatabaseHolder.database.favoritesDao().exists(wallpaper.id)
+            liked = isFavorite(wallpaper.id)
         }
     }
     ElevatedCard(

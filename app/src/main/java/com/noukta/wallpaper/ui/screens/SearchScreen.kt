@@ -9,11 +9,13 @@ import com.noukta.wallpaper.ui.components.WallpapersGrid
 fun SearchScreen(
     wallpapers: List<Wallpaper>,
     onLikeClick: (Wallpaper, Boolean) -> Unit,
-    onWallpaperPreview: (wallpaperIdx: Int) -> Unit
+    onWallpaperPreview: (wallpaperIdx: Int) -> Unit,
+    isFavorite: suspend (String) -> Boolean
 ) {
     WallpapersGrid(
         wallpapers = wallpapers,
         onLikeClick = onLikeClick,
-        onWallpaperPreview = onWallpaperPreview
+        onWallpaperPreview = onWallpaperPreview,
+        isFavorite = isFavorite
     )
 }
