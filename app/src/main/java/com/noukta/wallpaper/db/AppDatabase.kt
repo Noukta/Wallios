@@ -45,7 +45,8 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java, DatabaseHolder.DATABASE_NAME
             )
             .addMigrations(MIGRATION_2_3)
-            .fallbackToDestructiveMigration()
+            // Removed fallbackToDestructiveMigration to prevent data loss
+            // If migration fails, the app will crash - this is intentional to preserve user data
             .build()
     }
 }

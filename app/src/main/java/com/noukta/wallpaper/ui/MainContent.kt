@@ -141,6 +141,9 @@ fun MainContent(vm: MainViewModel) {
                             launchSingleTop = true
                             popUpTo(Screen.Home.route)
                         }
+                    },
+                    isFavorite = { wallpaperId ->
+                        vm.isFavorite(wallpaperId)
                     }
                 )
             }

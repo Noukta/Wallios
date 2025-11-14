@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import com.noukta.wallpaper.R
 import com.noukta.wallpaper.admob.AdmobHelper
 import com.noukta.wallpaper.data.Category
-import com.noukta.wallpaper.db.DatabaseHolder
 import com.noukta.wallpaper.db.obj.Wallpaper
 import com.noukta.wallpaper.ext.shareWallpaper
 import com.noukta.wallpaper.settings.AdUnit.INTERSTITIAL
@@ -61,7 +60,8 @@ fun PreviewScreen(
     wallpapers: List<Wallpaper>,
     initialWallpaper: Int,
     onLikeClick: (Wallpaper, Boolean) -> Unit,
-    onTagClick: (Category) -> Unit
+    onTagClick: (Category) -> Unit,
+    isFavorite: suspend (String) -> Boolean
 ) {
     // Safety check for empty list
     if (wallpapers.isEmpty()) {
@@ -80,14 +80,14 @@ fun PreviewScreen(
     }
 
     var liked by remember {
-        mutableStateOf(true)
+        mutableStateOf(false)
     }
     var showModeSelection by remember {
         mutableStateOf(false)
     }
     LaunchedEffect(pagerState.currentPage) {
         liked = withContext(Dispatchers.IO) {
-            DatabaseHolder.database.favoritesDao().exists(currentWallpaper.id)
+            isFavorite(currentWallpaper.id)
         }
     }
 
