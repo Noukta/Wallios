@@ -33,11 +33,12 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // TODO: Replace with your production AdMob App ID before release
-            manifestPlaceholders = [admobAppId: "ca-app-pub-3940256099942544~3347511713"]
+            // Use environment variable or fallback to test ID
+            manifestPlaceholders = [admobAppId: System.getenv("ADMOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"]
         }
         debug {
-            manifestPlaceholders = [admobAppId: "ca-app-pub-3940256099942544~3347511713"]
+            // Use test ID for debug builds
+            manifestPlaceholders = [admobAppId: System.getenv("ADMOB_APP_ID_DEBUG") ?: "ca-app-pub-3940256099942544~3347511713"]
         }
     }
     compileOptions {
@@ -59,6 +60,10 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+}
+
+kapt {
+    correctErrorTypes = true
 }
 
 dependencies {

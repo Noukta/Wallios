@@ -49,20 +49,26 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         startTime = System.currentTimeMillis()
 
-        // Sign in anonymously to Firebase
-        auth.signInAnonymously()
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d("FirestoreAuth", "signInAnonymously:success")
-                } else {
-                    Log.w("FirestoreAuth", "signInAnonymously:failure", task.exception)
-                    Toast.makeText(
-                        this,
-                        getString(R.string.auth_failed),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+        // Sign in anonymously to Firebase - ensure auth completes before data fetching
+        if (auth.currentUser == null) {
+            auth.signInAnonymously()
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        Log.d("FirestoreAuth", "signInAnonymously:success")
+                        vm.onAuthSuccess()
+                    } else {
+                        Log.w("FirestoreAuth", "signInAnonymously:failure", task.exception)
+                        Toast.makeText(
+                            this,
+                            getString(R.string.auth_failed),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
                 }
-            }
+        } else {
+            // Already authenticated
+            vm.onAuthSuccess()
+        }
     }
 
     override fun onStop() {

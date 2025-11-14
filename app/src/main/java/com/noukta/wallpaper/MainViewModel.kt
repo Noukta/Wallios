@@ -32,11 +32,25 @@ class MainViewModel @Inject constructor(
         private set
     var showReview by mutableStateOf(false)
 
+    private var isAuthReady by mutableStateOf(false)
+    private var pendingDataFetch = false
+
     companion object {
         private const val WALLPAPERS_PAGE_SIZE = 50L
     }
 
+    fun onAuthSuccess() {
+        isAuthReady = true
+        if (pendingDataFetch && _uiState.value.wallpapers.isEmpty()) {
+            fetchWallpapers()
+        }
+    }
+
     fun fetchWallpapers(limit: Long = WALLPAPERS_PAGE_SIZE) {
+        if (!isAuthReady) {
+            pendingDataFetch = true
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, error = null) }
             repository.fetchWallpapers(limit).collect { result ->
@@ -62,10 +76,7 @@ class MainViewModel @Inject constructor(
 
     fun fetchFavorites() {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.getFavorites().collect { favoriteIds ->
-                val favoriteWallpapers = favoriteIds.mapNotNull { favorite ->
-                    _uiState.value.wallpapers.find { it.id == favorite.id }
-                }
+            repository.getFavorites().collect { favoriteWallpapers ->
                 _uiState.update { it.copy(favorites = favoriteWallpapers) }
             }
         }
@@ -75,7 +86,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Default) {
             val searchResults = _uiState.value.wallpapers
                 .map { wallpaper ->
-                    wallpaper.apply { match(text) }
+                    wallpaper.match(text)
                 }
                 .filter { it.relevance > 0 }
                 .sortedByDescending { it.relevance }
