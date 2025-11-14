@@ -4,6 +4,7 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.DisplayMetrics
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
@@ -18,6 +19,8 @@ const val MODE = "mode"
 class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
     companion object {
+        private const val TAG = "WallpaperWorker"
+
         fun setWallpaper(context: Context, url: String, mode: Int, onFinish: () -> Unit) {
             val workManager = WorkManager.getInstance(context)
             val data = Data.Builder()
@@ -28,12 +31,21 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
                 .setInputData(data)
                 .build()
             workManager.enqueue(workRequest)
-            workManager.getWorkInfoByIdLiveData(workRequest.id)
-                .observeForever {
-                    if (it.state == WorkInfo.State.SUCCEEDED) {
-                        onFinish()
+
+            // Use observeOnce pattern to avoid memory leak
+            val observer = object : androidx.lifecycle.Observer<WorkInfo> {
+                override fun onChanged(value: WorkInfo) {
+                    if (value.state == WorkInfo.State.SUCCEEDED ||
+                        value.state == WorkInfo.State.FAILED ||
+                        value.state == WorkInfo.State.CANCELLED) {
+                        workManager.getWorkInfoByIdLiveData(workRequest.id).removeObserver(this)
+                        if (value.state == WorkInfo.State.SUCCEEDED) {
+                            onFinish()
+                        }
                     }
                 }
+            }
+            workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever(observer)
         }
     }
 
@@ -85,15 +97,33 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
 
     override suspend fun doWork(): Result {
         return try {
-                val wallpaperUrl = inputData.getString(WALLPAPER_URL).orEmpty()
-                val mode = inputData.getInt(MODE, 0)
+            val wallpaperUrl = inputData.getString(WALLPAPER_URL).orEmpty()
+            val mode = inputData.getInt(MODE, 0)
 
-                ImageHelper.urlToBitmap(wallpaperUrl, applicationContext){
-                    setWallpaper(applicationContext, it, mode)
-                }
-                Result.success()
-            } catch (throwable: Throwable) {
-                Result.failure()
+            if (wallpaperUrl.isEmpty()) {
+                Log.e(TAG, "Wallpaper URL is empty")
+                return Result.failure()
             }
+
+            var success = false
+            ImageHelper.urlToBitmap(
+                wallpaperUrl,
+                applicationContext,
+                onSuccess = { bitmap ->
+                    success = setWallpaper(applicationContext, bitmap, mode)
+                    if (!success) {
+                        Log.e(TAG, "Failed to set wallpaper")
+                    }
+                },
+                onError = { error ->
+                    Log.e(TAG, "Failed to load image: ${error.message}", error)
+                }
+            )
+
+            if (success) Result.success() else Result.failure()
+        } catch (throwable: Throwable) {
+            Log.e(TAG, "Error in doWork: ${throwable.message}", throwable)
+            Result.failure()
+        }
     }
 }

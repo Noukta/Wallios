@@ -6,12 +6,12 @@ import com.noukta.wallpaper.BuildConfig
 object DatabaseHolder {
     const val DATABASE_NAME = BuildConfig.APPLICATION_ID
 
-    private var database: AppDatabase? = null
+    private var instance: AppDatabase? = null
 
     fun init(applicationContext: Context) {
-        database = AppDatabase.getInstance(applicationContext)
+        instance = AppDatabase.getInstance(applicationContext)
     }
 
-    val Database: AppDatabase
-        get() = database ?: error("DatabaseHolder must be initialized in Application.onCreate()")
+    val database: AppDatabase
+        get() = instance ?: error("DatabaseHolder must be initialized in Application.onCreate()")
 }

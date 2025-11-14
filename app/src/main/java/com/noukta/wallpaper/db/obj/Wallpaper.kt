@@ -10,18 +10,15 @@ import com.noukta.wallpaper.data.Category
 )
 data class Wallpaper(
     @PrimaryKey val id: String,
-    @Ignore val url: String,
-    @Ignore val category: Category = Category.Iphone,
-    @Ignore val tags: List<String> = listOf(),
+    val url: String = "",
+    val category: Category = Category.Iphone,
+    val tags: List<String> = listOf(),
     @Ignore var relevance: Int = 0
 ) {
-    constructor(id: String) : this(id, url="")
-
-    fun match(text: String) {
+    fun match(text: String): Wallpaper {
         val query = text.lowercase().trim()
         if (query.isEmpty()) {
-            relevance = 0
-            return
+            return this.copy().apply { relevance = 0 }
         }
 
         val words = query.split("\\s+".toRegex())
@@ -59,6 +56,6 @@ data class Wallpaper(
             }
         }
 
-        relevance = score
+        return this.copy().apply { relevance = score }
     }
 }

@@ -50,7 +50,7 @@ fun WallpaperThumbnail(
     }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            liked = DatabaseHolder.Database.favoritesDao().exists(wallpaper.id)
+            liked = DatabaseHolder.database.favoritesDao().exists(wallpaper.id)
         }
     }
     ElevatedCard(

@@ -63,12 +63,19 @@ fun PreviewScreen(
     onLikeClick: (Wallpaper, Boolean) -> Unit,
     onTagClick: (Category) -> Unit
 ) {
+    // Safety check for empty list
+    if (wallpapers.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize())
+        return
+    }
+
     val context = LocalContext.current
     val snackState = remember { SnackbarHostState() }
-    val pagerState = rememberPagerState(initialWallpaper)
+    val safeInitialWallpaper = initialWallpaper.coerceIn(0, wallpapers.lastIndex)
+    val pagerState = rememberPagerState(safeInitialWallpaper)
     val currentWallpaper by remember {
         derivedStateOf {
-            wallpapers[pagerState.currentPage]
+            wallpapers.getOrNull(pagerState.currentPage) ?: wallpapers.first()
         }
     }
 
@@ -80,7 +87,7 @@ fun PreviewScreen(
     }
     LaunchedEffect(pagerState.currentPage) {
         liked = withContext(Dispatchers.IO) {
-            DatabaseHolder.Database.favoritesDao().exists(currentWallpaper.id)
+            DatabaseHolder.database.favoritesDao().exists(currentWallpaper.id)
         }
     }
 
@@ -147,7 +154,7 @@ fun PreviewScreen(
                 ) {
                     Icon(
                         imageVector = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = null,
+                        contentDescription = if (liked) stringResource(R.string.remove_from_favorites) else stringResource(R.string.add_to_favorites),
                         tint = when {
                             liked -> favorite_color
                             else -> MaterialTheme.colorScheme.onBackground
@@ -169,7 +176,7 @@ fun PreviewScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Share,
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.share_wallpaper)
                     )
                 }
             }

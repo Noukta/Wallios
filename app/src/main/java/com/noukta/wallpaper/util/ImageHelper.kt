@@ -23,13 +23,19 @@ object ImageHelper {
     fun urlToBitmap(
         imageURL: String?,
         context: Context,
-        onSuccess: (bitmap: Bitmap) -> Unit
+        onSuccess: (bitmap: Bitmap) -> Unit,
+        onError: (throwable: Throwable) -> Unit = {}
     ) {
         imageScope.launch {
             val request = buildRequest(context, imageURL)
-                .target {
-                    onSuccess(it.toBitmap())
-                }
+                .target(
+                    onSuccess = {
+                        onSuccess(it.toBitmap())
+                    },
+                    onError = { error ->
+                        onError(error ?: Exception("Unknown error loading image"))
+                    }
+                )
                 .build()
             imageLoader.enqueue(request)
         }

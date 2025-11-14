@@ -2,6 +2,7 @@ package com.noukta.wallpaper.admob
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
@@ -33,6 +34,49 @@ object AdmobHelper {
         }
     }
 
+    /**
+     * Helper function to get Activity from Context safely
+     */
+    private fun Context.getActivity(): Activity? {
+        var context = this
+        while (context is ContextWrapper) {
+            if (context is Activity) return context
+            context = context.baseContext
+        }
+        return null
+    }
+
+    private fun createFullScreenContentCallback(
+        adType: String,
+        onAdShowed: () -> Unit,
+        onAdDismissed: () -> Unit
+    ): FullScreenContentCallback {
+        return object : FullScreenContentCallback() {
+            override fun onAdClicked() {
+                Log.d(TAG, "$adType Ad was clicked.")
+            }
+
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "$adType Ad dismissed fullscreen content.")
+                onAdDismissed()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                Log.e(TAG, "$adType Ad failed to show fullscreen content.")
+                onAdDismissed()
+            }
+
+            override fun onAdImpression() {
+                Log.d(TAG, "$adType Ad recorded an impression.")
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "$adType Ad showed fullscreen content.")
+                onAdShowed()
+            }
+        }
+    }
+
     fun loadInterstitial(
         context: Context,
         adUnit: String,
@@ -51,42 +95,20 @@ object AdmobHelper {
                 Log.d(TAG, "Interstitial Ad was loaded.")
                 mInterstitialAds[adUnit] = interstitialAd
                 mInterstitialAds[adUnit]?.fullScreenContentCallback =
-                    object : FullScreenContentCallback() {
-                        override fun onAdClicked() {
-                            // Called when a click is recorded for an ad.
-                            Log.d(TAG, "Interstitial Ad was clicked.")
-                        }
-
-                        override fun onAdDismissedFullScreenContent() {
-                            // Called when ad is dismissed.
-                            Log.d(TAG, "Interstitial Ad dismissed fullscreen content.")
-                            onAdDismissed()
-                        }
-
-                        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                            // Called when ad fails to show.
-                            Log.e(TAG, "Interstitial Ad failed to show fullscreen content.")
-                            onAdDismissed()
-                        }
-
-                        override fun onAdImpression() {
-                            // Called when an impression is recorded for an ad.
-                            Log.d(TAG, "Interstitial Ad recorded an impression.")
-                        }
-
-                        override fun onAdShowedFullScreenContent() {
-                            // Called when ad is shown.
-                            Log.d(TAG, "Interstitial Ad showed fullscreen content.")
-                            onAdShowed()
-                        }
-                    }
+                    createFullScreenContentCallback("Interstitial", onAdShowed, onAdDismissed)
             }
         })
     }
 
     fun showInterstitial(context: Context, adUnit: String) {
+        val activity = context.getActivity()
+        if (activity == null) {
+            Log.e(TAG, "Cannot show interstitial ad: context is not an Activity")
+            return
+        }
+
         if (mInterstitialAds[adUnit] != null) {
-            mInterstitialAds[adUnit]?.show(context as Activity)
+            mInterstitialAds[adUnit]?.show(activity)
         } else {
             Log.d(TAG, "The interstitial ad wasn't ready yet.")
         }
@@ -110,47 +132,25 @@ object AdmobHelper {
                 Log.d(TAG, "Rewarded Ad was loaded.")
                 mRewardedAds[adUnit] = rewardedAd
                 mRewardedAds[adUnit]?.fullScreenContentCallback =
-                    object : FullScreenContentCallback() {
-                        override fun onAdClicked() {
-                            // Called when a click is recorded for an ad.
-                            Log.d(TAG, "Rewarded Ad was clicked.")
-                        }
-
-                        override fun onAdDismissedFullScreenContent() {
-                            // Called when ad is dismissed.
-                            Log.d(TAG, "Rewarded Ad dismissed fullscreen content.")
-                            onAdDismissed()
-                        }
-
-                        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                            // Called when ad fails to show.
-                            Log.e(TAG, "Rewarded Ad failed to show fullscreen content.")
-                            onAdDismissed()
-                        }
-
-                        override fun onAdImpression() {
-                            // Called when an impression is recorded for an ad.
-                            Log.d(TAG, "Rewarded Ad recorded an impression.")
-                        }
-
-                        override fun onAdShowedFullScreenContent() {
-                            // Called when ad is shown.
-                            Log.d(TAG, "Rewarded Ad showed fullscreen content.")
-                            onAdShowed()
-                        }
-                    }
+                    createFullScreenContentCallback("Rewarded", onAdShowed, onAdDismissed)
             }
         })
     }
 
     fun showRewarded(context: Context, adUnit: String, onRewarded: () -> Unit) {
+        val activity = context.getActivity()
+        if (activity == null) {
+            Log.e(TAG, "Cannot show rewarded ad: context is not an Activity")
+            return
+        }
+
         if (mRewardedAds[adUnit] != null) {
-            mRewardedAds[adUnit]?.show(context as Activity) {
+            mRewardedAds[adUnit]?.show(activity) {
                 // Handle the reward.
                 onRewarded()
             }
         } else {
-            Log.d("TAG", "The rewarded ad wasn't ready yet.")
+            Log.d(TAG, "The rewarded ad wasn't ready yet.")
         }
     }
 }

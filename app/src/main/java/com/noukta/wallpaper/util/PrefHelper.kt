@@ -19,12 +19,6 @@ object PrefHelper {
         preferences = context.getSharedPreferences(prefFile, Context.MODE_PRIVATE)
     }
 
-    /*private fun getBoolean(key: String, defValue: Boolean) = preferences.getBoolean(key, defValue)
-
-    private fun setBoolean(key: String, value: Boolean) {
-        preferences.edit().putBoolean(key, value).apply()
-    }*/
-
     private fun getInt(key: String, defValue: Int = 0) = preferences.getInt(key, defValue)
 
     private fun setInt(key: String, value: Int) {

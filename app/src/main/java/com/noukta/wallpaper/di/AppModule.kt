@@ -27,7 +27,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return DatabaseHolder.Database
+        return DatabaseHolder.database
     }
 
     @Provides
