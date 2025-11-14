@@ -91,6 +91,11 @@ fun PreviewScreen(
         }
     }
 
+    // Preload interstitial ad when screen loads for better UX
+    LaunchedEffect(Unit) {
+        AdmobHelper.loadInterstitial(context, INTERSTITIAL)
+    }
+
     Box(modifier = Modifier.fillMaxSize()){
         VerticalPager(
             pageCount = wallpapers.size,
@@ -202,10 +207,5 @@ fun PreviewScreen(
                 AdmobHelper.showInterstitial(context, INTERSTITIAL)
             }
         }
-        LaunchedEffect(Unit){
-            AdmobHelper.loadInterstitial(context, INTERSTITIAL)
-        }
     }
-
-
 }
