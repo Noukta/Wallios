@@ -31,6 +31,7 @@ class MainViewModel @Inject constructor(
     var showExit by mutableStateOf(false)
         private set
     var showReview by mutableStateOf(false)
+        private set
 
     private var isAuthReady by mutableStateOf(false)
     private var pendingDataFetch = false
@@ -115,5 +116,9 @@ class MainViewModel @Inject constructor(
 
     fun toggleExitDialog() {
         showExit = !showExit
+    }
+
+    fun setShowReview(show: Boolean) {
+        showReview = show
     }
 }

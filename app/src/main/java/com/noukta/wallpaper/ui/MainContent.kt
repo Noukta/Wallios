@@ -159,13 +159,13 @@ fun MainContent(vm: MainViewModel) {
         }
         if (timeSpent >= timeBeforeReview) {
             if (currentScreen == Screen.Preview) {
-                vm.showReview = true
+                vm.setShowReview(true)
             }
         }
     }
 
     ReviewDialog(vm.showReview){ reviewStatus ->
-        vm.showReview = false
+        vm.setShowReview(false)
         PrefHelper.setTimeSpent(0L)
         PrefHelper.setReviewStatus(reviewStatus)
         if(reviewStatus == ReviewChoice.RATE) {
@@ -173,6 +173,6 @@ fun MainContent(vm: MainViewModel) {
         }
     }
     ExitDialog(vm.showExit) {
-        vm.showExit = false
+        vm.toggleExitDialog()
     }
 }
