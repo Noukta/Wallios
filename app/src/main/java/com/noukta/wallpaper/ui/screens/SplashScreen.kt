@@ -22,19 +22,31 @@ import kotlinx.coroutines.delay
 @Composable
 fun SplashScreen(onLoadFinished: () -> Unit) {
     val context = LocalContext.current
-    val appOpenAdManager = AppOpenAdManager()
+    val appOpenAdManager = remember { AppOpenAdManager() }
 
     LaunchedEffect(Unit) {
-        for (i in AdUnit.APP_OPEN_DELAY * 2 downTo 0) {
-            delay(500)
-            appOpenAdManager.showAdIfAvailable(
-                context as Activity,
-                AdUnit.APP_OPEN
-            ) {
-                onLoadFinished()
+        var finished = false
+        val activity = context as? Activity
+
+        if (activity != null) {
+            for (i in AdUnit.APP_OPEN_DELAY * 2 downTo 0) {
+                delay(500)
+                appOpenAdManager.showAdIfAvailable(
+                    activity,
+                    AdUnit.APP_OPEN
+                ) {
+                    if (!finished) {
+                        finished = true
+                        onLoadFinished()
+                    }
+                }
             }
         }
-        onLoadFinished()
+
+        // Only call if not already finished by ad callback
+        if (!finished) {
+            onLoadFinished()
+        }
     }
 
     val animator = remember {

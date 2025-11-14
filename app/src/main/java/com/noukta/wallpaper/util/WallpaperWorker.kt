@@ -12,6 +12,10 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.noukta.wallpaper.settings.WallpaperMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -34,20 +38,23 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
                 .build()
             workManager.enqueue(workRequest)
 
-            // Use observeOnce pattern to avoid memory leak
-            val observer = object : androidx.lifecycle.Observer<WorkInfo> {
-                override fun onChanged(value: WorkInfo) {
-                    if (value.state == WorkInfo.State.SUCCEEDED ||
-                        value.state == WorkInfo.State.FAILED ||
-                        value.state == WorkInfo.State.CANCELLED) {
-                        workManager.getWorkInfoByIdLiveData(workRequest.id).removeObserver(this)
-                        if (value.state == WorkInfo.State.SUCCEEDED) {
-                            onFinish()
+            // Use coroutine with Flow to avoid memory leak from observeForever
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    val workInfo = workManager.getWorkInfoByIdFlow(workRequest.id)
+                        .first { info ->
+                            info.state == WorkInfo.State.SUCCEEDED ||
+                            info.state == WorkInfo.State.FAILED ||
+                            info.state == WorkInfo.State.CANCELLED
                         }
+
+                    if (workInfo.state == WorkInfo.State.SUCCEEDED) {
+                        onFinish()
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error observing work status", e)
                 }
             }
-            workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever(observer)
         }
     }
 
