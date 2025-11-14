@@ -12,14 +12,11 @@ fun HomeScreen(
     onShuffle: () -> Unit,
     onWallpaperPreview: (wallpaperIdx: Int) -> Unit
 ) {
-    WallpapersGrid(wallpapers = wallpapers,
-        onLikeClick = { wallpaper, liked ->
-            onLikeClick(wallpaper, liked)
-        },
+    WallpapersGrid(
+        wallpapers = wallpapers,
+        onLikeClick = onLikeClick,
         refreshable = true,
         onRefresh = onShuffle,
-        onWallpaperPreview = { _wallpaperIdx ->
-            onWallpaperPreview(_wallpaperIdx)
-        }
+        onWallpaperPreview = onWallpaperPreview
     )
 }

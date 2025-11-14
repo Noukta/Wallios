@@ -12,11 +12,7 @@ fun FavoritesScreen(
 ){
     WallpapersGrid(
         wallpapers = wallpapers,
-        onLikeClick = { wallpaper, liked ->
-            onLikeClick(wallpaper, liked)
-        },
-        onWallpaperPreview = { _wallpaperIdx ->
-            onWallpaperPreview(_wallpaperIdx)
-        }
+        onLikeClick = onLikeClick,
+        onWallpaperPreview = onWallpaperPreview
     )
 }
