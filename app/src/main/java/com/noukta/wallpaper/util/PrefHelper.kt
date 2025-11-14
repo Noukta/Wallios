@@ -19,15 +19,29 @@ object PrefHelper {
         preferences = context.getSharedPreferences(prefFile, Context.MODE_PRIVATE)
     }
 
-    private fun getInt(key: String, defValue: Int = 0) = preferences.getInt(key, defValue)
+    private fun checkInitialized() {
+        check(::preferences.isInitialized) {
+            "PrefHelper must be initialized by calling init(context) before use"
+        }
+    }
+
+    private fun getInt(key: String, defValue: Int = 0): Int {
+        checkInitialized()
+        return preferences.getInt(key, defValue)
+    }
 
     private fun setInt(key: String, value: Int) {
+        checkInitialized()
         preferences.edit().putInt(key, value).apply()
     }
 
-    private fun getLong(key: String, defValue: Long) = preferences.getLong(key, defValue)
+    private fun getLong(key: String, defValue: Long): Long {
+        checkInitialized()
+        return preferences.getLong(key, defValue)
+    }
 
     private fun setLong(key: String, value: Long) {
+        checkInitialized()
         preferences.edit().putLong(key, value).apply()
     }
 
@@ -45,7 +59,7 @@ object PrefHelper {
 
     fun getReviewStatus(): ReviewChoice {
         val ordinal = getInt(reviewStatus, ReviewChoice.REMIND.ordinal)
-        return ReviewChoice.values()[ordinal]
+        return ReviewChoice.values().getOrElse(ordinal) { ReviewChoice.REMIND }
     }
 
     fun setTimeSpent(time: Long) {
@@ -57,7 +71,7 @@ object PrefHelper {
     }
 
     fun resetLastPostNotificationsRequestTime() {
-        val currentTime= System.currentTimeMillis()
+        val currentTime = System.currentTimeMillis()
         setLong(lastPostNotificationsRequestTime, currentTime)
     }
 

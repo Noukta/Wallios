@@ -12,16 +12,27 @@ data class Wallpaper(
     @PrimaryKey val id: String,
     val url: String = "",
     val category: Category = Category.Iphone,
-    val tags: List<String> = listOf(),
-    @Ignore var relevance: Int = 0
+    val tags: List<String> = listOf()
 ) {
+    @Ignore
+    var relevance: Int = 0
+
+    // Secondary constructor for Room to create instances without relevance
+    constructor(id: String, url: String, category: Category, tags: List<String>, relevance: Int) : this(id, url, category, tags) {
+        this.relevance = relevance
+    }
+
+    companion object {
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
+    }
+
     fun match(text: String): Wallpaper {
         val query = text.lowercase().trim()
         if (query.isEmpty()) {
             return this.copy().apply { relevance = 0 }
         }
 
-        val words = query.split("\\s+".toRegex())
+        val words = query.split(WHITESPACE_REGEX)
         var score = 0
 
         tags.forEach { tag ->
