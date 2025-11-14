@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.noukta.wallpaper.data.Category
 import com.noukta.wallpaper.db.dao.FavoritesDao
 import com.noukta.wallpaper.db.obj.Wallpaper
 
@@ -29,7 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 // Add new columns for url, category, and tags
                 database.execSQL("ALTER TABLE favorites ADD COLUMN url TEXT NOT NULL DEFAULT ''")
-                database.execSQL("ALTER TABLE favorites ADD COLUMN category TEXT NOT NULL DEFAULT 'Iphone'")
+                database.execSQL("ALTER TABLE favorites ADD COLUMN category TEXT NOT NULL DEFAULT '${Category.Iphone.name}'")
                 database.execSQL("ALTER TABLE favorites ADD COLUMN tags TEXT NOT NULL DEFAULT ''")
             }
         }
@@ -45,7 +46,8 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java, DatabaseHolder.DATABASE_NAME
             )
             .addMigrations(MIGRATION_2_3)
-            .fallbackToDestructiveMigration()
+            // Removed fallbackToDestructiveMigration to prevent data loss
+            // If migration fails, the app will crash - this is intentional to preserve user data
             .build()
     }
 }

@@ -32,31 +32,63 @@ class WallpaperRepository @Inject constructor(
             .addOnSuccessListener { result ->
                 val wallpapers = result.mapNotNull { document ->
                     try {
-                        val tags = document.get("tags") as? List<String> ?: emptyList()
-                        if (tags.isNotEmpty()) {
-                            Wallpaper(
-                                id = document.id,
-                                url = document.data["url"] as? String ?: "",
-                                category = Category.valueOf(
-                                    tags[0].replaceFirstChar { it.titlecase(Locale.getDefault()) }
-                                ),
-                                tags = tags
-                            )
-                        } else null
+                        // Safely parse tags list
+                        @Suppress("UNCHECKED_CAST")
+                        val tags = (document.get("tags") as? List<*>)
+                            ?.filterIsInstance<String>()
+                            ?: emptyList()
+
+                        if (tags.isEmpty()) {
+                            Log.w(TAG, "Document ${document.id} has no tags, skipping")
+                            return@mapNotNull null
+                        }
+
+                        // Safely parse URL
+                        val url = document.getString("url")
+                        if (url.isNullOrBlank()) {
+                            Log.w(TAG, "Document ${document.id} has no valid URL, skipping")
+                            return@mapNotNull null
+                        }
+
+                        // Safely parse category from first tag
+                        val categoryName = tags[0].replaceFirstChar { it.titlecase(Locale.getDefault()) }
+                        val category = try {
+                            Category.valueOf(categoryName)
+                        } catch (e: IllegalArgumentException) {
+                            Log.w(TAG, "Document ${document.id} has invalid category: $categoryName, defaulting to Iphone")
+                            Category.Iphone
+                        }
+
+                        Wallpaper(
+                            id = document.id,
+                            url = url,
+                            category = category,
+                            tags = tags
+                        )
                     } catch (e: Exception) {
                         Log.w(TAG, "Error parsing wallpaper document: ${document.id}", e)
                         null
                     }
                 }
-                trySend(Result.success(wallpapers))
+
+                val sendResult = trySend(Result.success(wallpapers))
+                if (sendResult.isFailure) {
+                    Log.e(TAG, "Failed to send wallpapers to flow")
+                }
                 Log.d(TAG, "Loaded ${wallpapers.size} wallpapers from Firestore")
             }
             .addOnFailureListener { exception ->
                 Log.e(TAG, "Error fetching wallpapers", exception)
-                trySend(Result.failure(exception))
+                val sendResult = trySend(Result.failure(exception))
+                if (sendResult.isFailure) {
+                    Log.e(TAG, "Failed to send error to flow")
+                }
             }
 
-        awaitClose()
+        awaitClose {
+            // Cleanup if needed
+            Log.d(TAG, "Closing wallpapers flow")
+        }
     }
 
     /**

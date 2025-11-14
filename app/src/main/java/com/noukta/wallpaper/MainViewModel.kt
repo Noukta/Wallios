@@ -31,6 +31,7 @@ class MainViewModel @Inject constructor(
     var showExit by mutableStateOf(false)
         private set
     var showReview by mutableStateOf(false)
+        private set
 
     private var isAuthReady by mutableStateOf(false)
     private var pendingDataFetch = false
@@ -51,6 +52,7 @@ class MainViewModel @Inject constructor(
             pendingDataFetch = true
             return
         }
+        pendingDataFetch = false
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, error = null) }
             repository.fetchWallpapers(limit).collect { result ->
@@ -95,8 +97,8 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * add wallpaper to favorites when it's already liked or remove from favorites.
-     * @param liked true means already liked (false by default)
+     * Toggle wallpaper favorite status.
+     * @param liked true means already liked (remove from favorites), false means add to favorites
      */
     fun likeWallpaper(wallpaper: Wallpaper, liked: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -105,7 +107,18 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Check if a wallpaper is in favorites
+     */
+    suspend fun isFavorite(wallpaperId: String): Boolean {
+        return repository.isFavorite(wallpaperId)
+    }
+
     fun toggleExitDialog() {
         showExit = !showExit
+    }
+
+    fun setShowReview(show: Boolean) {
+        showReview = show
     }
 }

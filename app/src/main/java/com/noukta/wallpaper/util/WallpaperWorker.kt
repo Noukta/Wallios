@@ -12,6 +12,12 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.noukta.wallpaper.settings.WallpaperMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 const val WALLPAPER_URL = "wallpaper_url"
 const val MODE = "mode"
@@ -32,20 +38,23 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
                 .build()
             workManager.enqueue(workRequest)
 
-            // Use observeOnce pattern to avoid memory leak
-            val observer = object : androidx.lifecycle.Observer<WorkInfo> {
-                override fun onChanged(value: WorkInfo) {
-                    if (value.state == WorkInfo.State.SUCCEEDED ||
-                        value.state == WorkInfo.State.FAILED ||
-                        value.state == WorkInfo.State.CANCELLED) {
-                        workManager.getWorkInfoByIdLiveData(workRequest.id).removeObserver(this)
-                        if (value.state == WorkInfo.State.SUCCEEDED) {
-                            onFinish()
+            // Use coroutine with Flow to avoid memory leak from observeForever
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    val workInfo = workManager.getWorkInfoByIdFlow(workRequest.id)
+                        .first { info ->
+                            info.state == WorkInfo.State.SUCCEEDED ||
+                            info.state == WorkInfo.State.FAILED ||
+                            info.state == WorkInfo.State.CANCELLED
                         }
+
+                    if (workInfo.state == WorkInfo.State.SUCCEEDED) {
+                        onFinish()
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error observing work status", e)
                 }
             }
-            workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever(observer)
         }
     }
 
@@ -59,15 +68,18 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
     }
 
     private fun setWallpaper(context: Context, bitmap: Bitmap, mode: Int): Boolean {
-        var result = false
         val resizedBitmap = getResizedBitmap(bitmap, context.resources.displayMetrics)
+        var homeResult = true
+        var lockResult = true
+
         if (mode in listOf(WallpaperMode.BOTH, WallpaperMode.HOME)) {
-            result = setWallpaperUp(context, resizedBitmap, WallpaperManager.FLAG_SYSTEM)
+            homeResult = setWallpaperUp(context, resizedBitmap, WallpaperManager.FLAG_SYSTEM)
         }
         if (mode in listOf(WallpaperMode.BOTH, WallpaperMode.LOCK)) {
-            result = setWallpaperUp(context, resizedBitmap, WallpaperManager.FLAG_LOCK)
+            lockResult = setWallpaperUp(context, resizedBitmap, WallpaperManager.FLAG_LOCK)
         }
-        return result
+        // Both operations must succeed for BOTH mode
+        return homeResult && lockResult
     }
 
     private fun getResizedBitmap(bitmap: Bitmap, displayMetrics: DisplayMetrics): Bitmap {
@@ -91,7 +103,7 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
             bitmap,
             newWidth,
             newHeight,
-            false
+            true  // Enable filtering for better image quality
         )
     }
 
@@ -105,20 +117,24 @@ class WallpaperWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
                 return Result.failure()
             }
 
-            var success = false
-            ImageHelper.urlToBitmap(
-                wallpaperUrl,
-                applicationContext,
-                onSuccess = { bitmap ->
-                    success = setWallpaper(applicationContext, bitmap, mode)
-                    if (!success) {
-                        Log.e(TAG, "Failed to set wallpaper")
+            // Use suspendCoroutine to properly wait for the async callback
+            val success = suspendCoroutine { continuation ->
+                ImageHelper.urlToBitmap(
+                    wallpaperUrl,
+                    applicationContext,
+                    onSuccess = { bitmap ->
+                        val result = setWallpaper(applicationContext, bitmap, mode)
+                        if (!result) {
+                            Log.e(TAG, "Failed to set wallpaper")
+                        }
+                        continuation.resume(result)
+                    },
+                    onError = { error ->
+                        Log.e(TAG, "Failed to load image: ${error.message}", error)
+                        continuation.resume(false)
                     }
-                },
-                onError = { error ->
-                    Log.e(TAG, "Failed to load image: ${error.message}", error)
-                }
-            )
+                )
+            }
 
             if (success) Result.success() else Result.failure()
         } catch (throwable: Throwable) {

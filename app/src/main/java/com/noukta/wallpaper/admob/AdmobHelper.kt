@@ -20,18 +20,8 @@ object AdmobHelper {
     private var mRewardedAds: MutableMap<String, RewardedAd?> = mutableMapOf()
     private const val TAG = "AdmobHelper"
 
-    fun init(
-        context: Context,
-        interstitialUnits: List<String> = listOf(),
-        rewardedUnits: List<String> = listOf()
-    ) {
+    fun init(context: Context) {
         MobileAds.initialize(context) {}
-        interstitialUnits.forEach {
-            mInterstitialAds[it] = null
-        }
-        rewardedUnits.forEach {
-            mRewardedAds[it] = null
-        }
     }
 
     /**
@@ -79,9 +69,7 @@ object AdmobHelper {
 
     fun loadInterstitial(
         context: Context,
-        adUnit: String,
-        onAdShowed: () -> Unit = {},
-        onAdDismissed: () -> Unit = {}
+        adUnit: String
     ) {
         val adRequest = AdRequest.Builder().build()
 
@@ -94,21 +82,29 @@ object AdmobHelper {
             override fun onAdLoaded(interstitialAd: InterstitialAd) {
                 Log.d(TAG, "Interstitial Ad was loaded.")
                 mInterstitialAds[adUnit] = interstitialAd
-                mInterstitialAds[adUnit]?.fullScreenContentCallback =
-                    createFullScreenContentCallback("Interstitial", onAdShowed, onAdDismissed)
             }
         })
     }
 
-    fun showInterstitial(context: Context, adUnit: String) {
+    fun showInterstitial(
+        context: Context,
+        adUnit: String,
+        onAdShowed: () -> Unit = {},
+        onAdDismissed: () -> Unit = {}
+    ) {
         val activity = context.getActivity()
         if (activity == null) {
             Log.e(TAG, "Cannot show interstitial ad: context is not an Activity")
             return
         }
 
-        if (mInterstitialAds[adUnit] != null) {
-            mInterstitialAds[adUnit]?.show(activity)
+        val ad = mInterstitialAds[adUnit]
+        if (ad != null) {
+            ad.fullScreenContentCallback =
+                createFullScreenContentCallback("Interstitial", onAdShowed, onAdDismissed)
+            ad.show(activity)
+            // Clear ad after showing as it can only be shown once
+            mInterstitialAds[adUnit] = null
         } else {
             Log.d(TAG, "The interstitial ad wasn't ready yet.")
         }
@@ -116,9 +112,7 @@ object AdmobHelper {
 
     fun loadRewarded(
         context: Context,
-        adUnit: String,
-        onAdShowed: () -> Unit = {},
-        onAdDismissed: () -> Unit = {}
+        adUnit: String
     ) {
         val adRequest = AdRequest.Builder().build()
 
@@ -131,24 +125,33 @@ object AdmobHelper {
             override fun onAdLoaded(rewardedAd: RewardedAd) {
                 Log.d(TAG, "Rewarded Ad was loaded.")
                 mRewardedAds[adUnit] = rewardedAd
-                mRewardedAds[adUnit]?.fullScreenContentCallback =
-                    createFullScreenContentCallback("Rewarded", onAdShowed, onAdDismissed)
             }
         })
     }
 
-    fun showRewarded(context: Context, adUnit: String, onRewarded: () -> Unit) {
+    fun showRewarded(
+        context: Context,
+        adUnit: String,
+        onRewarded: () -> Unit,
+        onAdShowed: () -> Unit = {},
+        onAdDismissed: () -> Unit = {}
+    ) {
         val activity = context.getActivity()
         if (activity == null) {
             Log.e(TAG, "Cannot show rewarded ad: context is not an Activity")
             return
         }
 
-        if (mRewardedAds[adUnit] != null) {
-            mRewardedAds[adUnit]?.show(activity) {
+        val ad = mRewardedAds[adUnit]
+        if (ad != null) {
+            ad.fullScreenContentCallback =
+                createFullScreenContentCallback("Rewarded", onAdShowed, onAdDismissed)
+            ad.show(activity) {
                 // Handle the reward.
                 onRewarded()
             }
+            // Clear ad after showing as it can only be shown once
+            mRewardedAds[adUnit] = null
         } else {
             Log.d(TAG, "The rewarded ad wasn't ready yet.")
         }

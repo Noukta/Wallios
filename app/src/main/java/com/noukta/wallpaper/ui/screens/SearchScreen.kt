@@ -11,12 +11,9 @@ fun SearchScreen(
     onLikeClick: (Wallpaper, Boolean) -> Unit,
     onWallpaperPreview: (wallpaperIdx: Int) -> Unit
 ) {
-    WallpapersGrid(wallpapers = wallpapers,
-        onLikeClick = { wallpaper, liked ->
-            onLikeClick(wallpaper, liked)
-        },
-        onWallpaperPreview = { _wallpaperIdx ->
-            onWallpaperPreview(_wallpaperIdx)
-        }
+    WallpapersGrid(
+        wallpapers = wallpapers,
+        onLikeClick = onLikeClick,
+        onWallpaperPreview = onWallpaperPreview
     )
 }
