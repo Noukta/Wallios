@@ -10,13 +10,15 @@ fun HomeScreen(
     wallpapers: List<Wallpaper>,
     onLikeClick: (Wallpaper, Boolean) -> Unit,
     onShuffle: () -> Unit,
-    onWallpaperPreview: (wallpaperIdx: Int) -> Unit
+    onWallpaperPreview: (wallpaperIdx: Int) -> Unit,
+    isFavorite: suspend (String) -> Boolean
 ) {
     WallpapersGrid(
         wallpapers = wallpapers,
         onLikeClick = onLikeClick,
         refreshable = true,
         onRefresh = onShuffle,
-        onWallpaperPreview = onWallpaperPreview
+        onWallpaperPreview = onWallpaperPreview,
+        isFavorite = isFavorite
     )
 }

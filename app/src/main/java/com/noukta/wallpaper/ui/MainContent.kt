@@ -101,6 +101,9 @@ fun MainContent(vm: MainViewModel) {
                     onWallpaperPreview = { wallpaperIdx ->
                         vm.updateWallpaperIdx(wallpaperIdx, uiState.wallpapers.lastIndex)
                         navController.navigate(Screen.Preview.route)
+                    },
+                    isFavorite = { wallpaperId ->
+                        vm.isFavorite(wallpaperId)
                     })
             }
             composable(Screen.Favorites.route) {
@@ -109,6 +112,8 @@ fun MainContent(vm: MainViewModel) {
                 }, onWallpaperPreview = { wallpaperIdx ->
                     vm.updateWallpaperIdx(wallpaperIdx, uiState.favorites.lastIndex)
                     navController.navigate(Screen.Preview.route)
+                }, isFavorite = { wallpaperId ->
+                    vm.isFavorite(wallpaperId)
                 })
             }
             composable(Screen.Search.route) {
@@ -120,6 +125,9 @@ fun MainContent(vm: MainViewModel) {
                     onWallpaperPreview = { wallpaperIdx ->
                         vm.updateWallpaperIdx(wallpaperIdx, uiState.searchResult.lastIndex)
                         navController.navigate(Screen.Preview.route)
+                    },
+                    isFavorite = { wallpaperId ->
+                        vm.isFavorite(wallpaperId)
                     }
                 )
             }
